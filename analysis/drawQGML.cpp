@@ -26,13 +26,13 @@ int main() {
 
   setStyle();
 
-  system( "mkdir -p figures" );
+  system( "mkdir -p figures/examples" );
 
   TFile* file = TFile::Open("qgMiniTuple.root", "read");
   TTree* tree = (TTree*)file->Get("qgMiniTupleAK4chs/qgMiniTuple");
 
-  drawDeltaR( tree, 300., 400., 0., 2., true );
-  drawDeltaR( tree, 300., 400., 0., 2., false );
+  //drawDeltaR( tree, 300., 400., 0., 2., true );
+  //drawDeltaR( tree, 300., 400., 0., 2., false );
 
   drawImages( tree );
 
@@ -86,8 +86,8 @@ void drawImages( TTree* tree ) {
       etaBin += 1;
       phiBin += 1;
 
-      float eta = -0.3 + 0.005*(etaBin-1.) + 0.000001;
-      float phi = -0.3 + 0.005*(phiBin-1.) + 0.000001;
+      float dEta = -0.3 + 0.005*(etaBin-1.) + 0.000001;
+      float dPhi = -0.3 + 0.005*(phiBin-1.) + 0.000001;
 
       //float eta = -0.3 + 0.01*(etaBin-1.) + 0.000001;
       //float phi = -0.3 + 0.01*(phiBin-1.) + 0.000001;
@@ -95,16 +95,47 @@ void drawImages( TTree* tree ) {
       h2_chImage->SetBinContent( etaBin, phiBin, chImage[i] );
 
       if( partonId==21 ) {
-        hp_chImage_gluon->Fill( eta, phi, chImage[i] );
-        hp_chImageZoom_gluon->Fill( eta, phi, chImage[i] );
+        hp_chImage_gluon->Fill( dEta, dPhi, chImage[i] );
+        hp_chImageZoom_gluon->Fill( dEta, dPhi, chImage[i] );
       } else if ( abs(partonId)<4 ) {
-        hp_chImage_quark->Fill( eta, phi, chImage[i] );
-        hp_chImageZoom_quark->Fill( eta, phi, chImage[i] );
+        hp_chImage_quark->Fill( dEta, dPhi, chImage[i] );
+        hp_chImageZoom_quark->Fill( dEta, dPhi, chImage[i] );
       }
 
     }
 
-  }
+    if( iEntry%1000==0 ) {
+
+      TCanvas* c1 = new TCanvas("c1", "", 600, 600);
+      c1->cd();
+
+      TH2D* h2_axes = new TH2D("axes", "", 10, -0.3, 0.3, 10, -0.3, 0.3);
+      h2_axes->Draw("");
+
+      TPaveText* label = new TPaveText(0.2, 0.75, 0.55, 0.9, "brNDC");
+      label->SetTextSize(0.032);
+      label->SetFillColor(0);
+      label->SetTextAlign(11);
+      if( partonId==21 ) 
+        label->AddText("Gluon Jet");
+      else
+        label->AddText("Quark Jet");
+      label->AddText( Form("p_{T} = %.0f GeV",pt) );
+      label->AddText( Form("#eta = %.1f",eta) );
+      label->Draw("same");
+
+      h2_chImage->Draw("col z same");
+
+      c1->SaveAs( Form("figures/examples/chImage_%d.pdf", iEntry) );
+      c1->SaveAs( Form("figures/examples/chImage_%d.eps", iEntry) );
+
+      delete c1;
+      delete h2_axes;
+      delete label;
+
+    }
+
+  } // for entries
 
 
   drawImage( hp_chImage_gluon, "chImage_gluon", kRed );
@@ -148,10 +179,6 @@ void drawImage( TProfile2D* hp, const std::string& saveName, int baseColor ) {
 
   delete c1;
   
-  //c1->Clear();
-  //h2_chImage->Draw("col z");
-  //c1->SaveAs("prova2.eps");
-
 }
 
 
@@ -205,6 +232,8 @@ void drawDeltaR( TTree* tree, float ptMin, float ptMax, float etaMin, float etaM
   tree->SetBranchAddress( "ptph", ptph );
 
   for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
+
+    if( iEntry % 10000 == 0 ) std::cout << "Entry: " << iEntry << " / " << nentries << std::endl;
 
     tree->GetEntry(iEntry);
 
