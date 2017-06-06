@@ -26,6 +26,8 @@ int main() {
 
   setStyle();
 
+  system( "mkdir -p figures" );
+
   TFile* file = TFile::Open("qgMiniTuple.root", "read");
   TTree* tree = (TTree*)file->Get("qgMiniTupleAK4chs/qgMiniTuple");
 
@@ -43,6 +45,10 @@ void drawImages( TTree* tree ) {
 
   int nPixCh;
   tree->SetBranchAddress( "nPixCh", &nPixCh );
+  float drMaxCh;
+  tree->SetBranchAddress( "drMaxCh", &drMaxCh );
+  float pixelSizeCh;
+  tree->SetBranchAddress( "pixelSizeCh", &pixelSizeCh );
   float chImage[99999];
   TBranch *b_chImage;
   tree->SetBranchAddress( "chImage", chImage, &b_chImage );
@@ -57,15 +63,14 @@ void drawImages( TTree* tree ) {
 
 
   int nPixCh_1D = sqrt(nPixCh);
-  float drMax = 0.3;
 
-  TH2D* h2_chImage = new TH2D( "chImage", "", nPixCh_1D, -drMax, drMax, nPixCh_1D, -drMax, drMax );
+  TH2D* h2_chImage = new TH2D( "chImage", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
 
-  TProfile2D* hp_chImage_gluon = new TProfile2D( "chImageProf_gluon", "", nPixCh_1D, -drMax, drMax, nPixCh_1D, -drMax, drMax );
-  TProfile2D* hp_chImage_quark = new TProfile2D( "chImageProf_quark", "", nPixCh_1D, -drMax, drMax, nPixCh_1D, -drMax, drMax );
+  TProfile2D* hp_chImage_gluon = new TProfile2D( "chImageProf_gluon", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
+  TProfile2D* hp_chImage_quark = new TProfile2D( "chImageProf_quark", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
 
-  TProfile2D* hp_chImageZoom_gluon = new TProfile2D( "chImageProfZoom_gluon", "", 20, -0.1, 0.1, 20, -0.1, 0.1 );
-  TProfile2D* hp_chImageZoom_quark = new TProfile2D( "chImageProfZoom_quark", "", 20, -0.1, 0.1, 20, -0.1, 0.1 );
+  TProfile2D* hp_chImageZoom_gluon = new TProfile2D( "chImageProfZoom_gluon", "", 40, -0.1, 0.1, 40, -0.1, 0.1 );
+  TProfile2D* hp_chImageZoom_quark = new TProfile2D( "chImageProfZoom_quark", "", 40, -0.1, 0.1, 40, -0.1, 0.1 );
 
 
   int nentries = tree->GetEntries();
