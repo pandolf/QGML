@@ -15,6 +15,6 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/
 
 
 
-createTreeForPandas: createTreeForPandas.cpp 
-	$(CC) -Wall $(INCLUDES) -o createTreeForPandas createTreeForPandas.cpp $(ROOTFLAG) $(EXTRALIBS)
+createTreeLite: createTreeLite.cpp 
+	$(CC) -Wall $(INCLUDES) -o createTreeLite createTreeLite.cpp $(ROOTFLAG) $(EXTRALIBS)
 
