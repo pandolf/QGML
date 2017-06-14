@@ -1,5 +1,8 @@
+#! /usr/bin/python
+
 import numpy as np
 import ROOT
+import json as simplejson
 
 import keras
 from keras.models import Sequential
@@ -11,9 +14,7 @@ from sklearn.cross_validation import train_test_split
 
 
 
-#a = rn.root2array('qgMiniTuple_pandas.root', 'qgLite')
-
-f = ROOT.TFile.Open('qgMiniTuple_lite.root', 'read')
+f = ROOT.TFile.Open('qgMiniTupleLite.root', 'read')
 t = f.Get('qgLite')
 
 n = t.GetEntries()
@@ -25,69 +26,70 @@ for e in t:
 
   qg_array.append( e.isQuark )
 
-  x = []
-  x.append( e.chImageLite_0 ) # yes, i actually did this
-  x.append( e.chImageLite_1 )
-  x.append( e.chImageLite_2 )
-  x.append( e.chImageLite_3 )
-  x.append( e.chImageLite_4 )
-  x.append( e.chImageLite_5 )
-  x.append( e.chImageLite_6 )
-  x.append( e.chImageLite_7 )
-  x.append( e.chImageLite_8 )
-  x.append( e.chImageLite_9 )
-  x.append( e.chImageLite_10 )
-  x.append( e.chImageLite_11 )
-  x.append( e.chImageLite_12 )
-  x.append( e.chImageLite_13 )
-  x.append( e.chImageLite_14 )
-  x.append( e.chImageLite_15 )
-  x.append( e.chImageLite_16 )
-  x.append( e.chImageLite_17 )
-  x.append( e.chImageLite_18 )
-  x.append( e.chImageLite_19 )
-  x.append( e.chImageLite_20 )
-  x.append( e.chImageLite_21 )
-  x.append( e.chImageLite_22 )
-  x.append( e.chImageLite_23 )
-  x.append( e.chImageLite_24 )
-  x.append( e.chImageLite_25 )
-  x.append( e.chImageLite_26 )
-  x.append( e.chImageLite_27 )
-  x.append( e.chImageLite_28 )
-  x.append( e.chImageLite_29 )
-  x.append( e.chImageLite_30 )
-  x.append( e.chImageLite_31 )
-  x.append( e.chImageLite_32 )
-  x.append( e.chImageLite_33 )
-  x.append( e.chImageLite_34 )
-  x.append( e.chImageLite_35 )
-  x.append( e.chImageLite_36 )
-  x.append( e.chImageLite_37 )
-  x.append( e.chImageLite_38 )
-  x.append( e.chImageLite_39 )
-  x.append( e.chImageLite_40 )
-  x.append( e.chImageLite_41 )
-  x.append( e.chImageLite_42 )
-  x.append( e.chImageLite_43 )
-  x.append( e.chImageLite_44 )
-  x.append( e.chImageLite_45 )
-  x.append( e.chImageLite_46 )
-  x.append( e.chImageLite_47 )
-  x.append( e.chImageLite_48 )
-  x.append( e.chImageLite_49 )
-  x.append( e.chImageLite_50 )
-  x.append( e.chImageLite_51 )
-  x.append( e.chImageLite_52 )
-  x.append( e.chImageLite_53 )
-  x.append( e.chImageLite_54 )
-  x.append( e.chImageLite_55 )
-  x.append( e.chImageLite_56 )
-  x.append( e.chImageLite_57 )
-  x.append( e.chImageLite_58 )
-  x.append( e.chImageLite_59 )
+  #x = []
+  #x.append( e.chImageLite_0 ) # yes, i actually did this
+  #x.append( e.chImageLite_1 )
+  #x.append( e.chImageLite_2 )
+  #x.append( e.chImageLite_3 )
+  #x.append( e.chImageLite_4 )
+  #x.append( e.chImageLite_5 )
+  #x.append( e.chImageLite_6 )
+  #x.append( e.chImageLite_7 )
+  #x.append( e.chImageLite_8 )
+  #x.append( e.chImageLite_9 )
+  #x.append( e.chImageLite_10 )
+  #x.append( e.chImageLite_11 )
+  #x.append( e.chImageLite_12 )
+  #x.append( e.chImageLite_13 )
+  #x.append( e.chImageLite_14 )
+  #x.append( e.chImageLite_15 )
+  #x.append( e.chImageLite_16 )
+  #x.append( e.chImageLite_17 )
+  #x.append( e.chImageLite_18 )
+  #x.append( e.chImageLite_19 )
+  #x.append( e.chImageLite_20 )
+  #x.append( e.chImageLite_21 )
+  #x.append( e.chImageLite_22 )
+  #x.append( e.chImageLite_23 )
+  #x.append( e.chImageLite_24 )
+  #x.append( e.chImageLite_25 )
+  #x.append( e.chImageLite_26 )
+  #x.append( e.chImageLite_27 )
+  #x.append( e.chImageLite_28 )
+  #x.append( e.chImageLite_29 )
+  #x.append( e.chImageLite_30 )
+  #x.append( e.chImageLite_31 )
+  #x.append( e.chImageLite_32 )
+  #x.append( e.chImageLite_33 )
+  #x.append( e.chImageLite_34 )
+  #x.append( e.chImageLite_35 )
+  #x.append( e.chImageLite_36 )
+  #x.append( e.chImageLite_37 )
+  #x.append( e.chImageLite_38 )
+  #x.append( e.chImageLite_39 )
+  #x.append( e.chImageLite_40 )
+  #x.append( e.chImageLite_41 )
+  #x.append( e.chImageLite_42 )
+  #x.append( e.chImageLite_43 )
+  #x.append( e.chImageLite_44 )
+  #x.append( e.chImageLite_45 )
+  #x.append( e.chImageLite_46 )
+  #x.append( e.chImageLite_47 )
+  #x.append( e.chImageLite_48 )
+  #x.append( e.chImageLite_49 )
+  #x.append( e.chImageLite_50 )
+  #x.append( e.chImageLite_51 )
+  #x.append( e.chImageLite_52 )
+  #x.append( e.chImageLite_53 )
+  #x.append( e.chImageLite_54 )
+  #x.append( e.chImageLite_55 )
+  #x.append( e.chImageLite_56 )
+  #x.append( e.chImageLite_57 )
+  #x.append( e.chImageLite_58 )
+  #x.append( e.chImageLite_59 )
 
-  var_array.append( x )
+  #var_array.append( x )
+  var_array.append( e.chImageLite )
 
 
 y = np.array(qg_array)
@@ -129,7 +131,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=0.2,random_st
 filters = 30
 kernel_size = 3
 #hidden_dims = 250
-epochs = 50
+epochs = 1
 max_features = Nvars
 maxlen = Nvars
 embedding_dims = 50
@@ -177,10 +179,12 @@ model.fit(X_train, y_train,
           epochs=epochs,
           validation_data=(X_test, y_test))
 
-#y_pred = pd.Series(clf.predict(X_test))
-#
-#correct = (y_pred == y_test.reset_index()['isQuark'])
-#totcorr = sum(correct)
-#acc = totcorr/float(len(y_pred))
-#
-#print( "Accuracy = %d / %d = %.2f %%" % (totcorr,len(y_test),100.*acc) )
+
+### saving the model
+model_json = model.to_json()
+with open("trainings/testQG_CNN.json", "w") as json_file:
+    json_file.write(simplejson.dumps(simplejson.loads(model_json), indent=4))
+
+
+##saving the training
+model.save("trainings/testQG_CNN.h5")

@@ -25,34 +25,40 @@ int main() {
   tree->SetBranchAddress( "pt", &pt );
   float eta;
   tree->SetBranchAddress( "eta", &eta );
+  float qgl;
+  tree->SetBranchAddress( "qgl", &qgl );
 
   tree->GetEntry(0);
   int nPixCh_1D = sqrt(nPixCh);
 
 
 
-  TFile* newFile = TFile::Open("qgMiniTuple_lite.root", "recreate");
+  TFile* newFile = TFile::Open("qgMiniTupleLite.root", "recreate");
   TTree* newTree = new TTree("qgLite", "");
 
   int isQuark;
   newTree->Branch("isQuark", &isQuark, "isQuark/I");
+
+  newTree->Branch("qgl", &qgl, "qgl/F");
+
   int NPIX = 60;  // pixels of 0.005 from 0 to 0.3 in dR
 
-//// use the following for flat branches:
-//float chImageLite[NPIX]; 
-//for( unsigned i=0; i<NPIX; ++i )
-//  newTree->Branch( Form("chImageLite_%d", i), &chImageLite[i], Form("chImageLite_%d/F", i) );
-
-
-  // use the following for array branches:
-  newTree->Branch("NPIX", &NPIX, "NPIX/I" );
+  // use the following for flat branches:
   float chImageLite[NPIX]; 
-  newTree->Branch( "chImageLite", chImageLite, "chImageLite[NPIX]/F");
+  for( unsigned i=0; i<NPIX; ++i )
+    newTree->Branch( Form("chImageLite_%d", i), &chImageLite[i], Form("chImageLite_%d/F", i) );
+
+
+//// use the following for array branches:
+//newTree->Branch("NPIX", &NPIX, "NPIX/I" );
+//float chImageLite[NPIX]; 
+//newTree->Branch( "chImageLite", chImageLite, "chImageLite[NPIX]/F");
 
 
   int nentries = tree->GetEntries();
   if( DEBUG_ ) 
     nentries = 1000;
+
 
   for( unsigned iEntry=0; iEntry<nentries; iEntry++ ) {
 
@@ -67,6 +73,7 @@ int main() {
     } else {
       continue;
     }
+
 
     if( pt<300. || pt>400. ) continue;
     if( fabs(eta)>2. ) continue;

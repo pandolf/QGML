@@ -85,7 +85,7 @@ void drawImages( TTree* tree ) {
 
 
   int nentries = tree->GetEntries();
-  nentries = 10000;
+  nentries = 50000;
   int drawnEvents = 0;
 
 
@@ -207,7 +207,8 @@ void drawImages( TTree* tree ) {
       c1->SaveAs( Form("figures/examples/chImage_%d.pdf", iEntry) );
       c1->SaveAs( Form("figures/examples/chImage_%d.eps", iEntry) );
 
-      c1->Clear();
+      TCanvas* cLite = new TCanvas("cLite", "", 600, 600);
+      cLite->cd();
 
       TH2D* h2_axesLite = new TH2D("axesLite", "", 10, 0., 0.3, 10, 0., 2.);
       h2_axesLite->Draw();
@@ -218,10 +219,11 @@ void drawImages( TTree* tree ) {
 
       gPad->RedrawAxis();
 
-      c1->SaveAs( Form("figures/examples/chImageLite_%d.pdf", iEntry) );
-      c1->SaveAs( Form("figures/examples/chImageLite_%d.eps", iEntry) );
+      cLite->SaveAs( Form("figures/examples/chImageLite_%d.pdf", iEntry) );
+      cLite->SaveAs( Form("figures/examples/chImageLite_%d.eps", iEntry) );
 
       delete c1;
+      delete cLite;
       delete h2_axes;
       delete h2_axesLite;
       delete label;
