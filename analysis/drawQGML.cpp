@@ -15,10 +15,11 @@
 
 
 bool DEBUG_ = false;
+int nColors = 10;
 
 
 void setStyle();
-void setColors( int baseColor );
+void setColors( int baseColor, int nColors, Double_t* levels=0 );
 void drawDeltaR( TTree* tree, float ptMin, float ptMax, float etaMin, float etaMax, bool ptWeighted=true ) ;
 std::string etaString( float eta );
 void drawImages( TTree* tree );
@@ -34,9 +35,11 @@ int main() {
   TFile* file = TFile::Open("qgMiniTuple.root", "read");
   TTree* tree = (TTree*)file->Get("qgMiniTupleAK4chs/qgMiniTuple");
 
+  //std::cout << "-> Starting draw deltaR..." << std::endl;
   //drawDeltaR( tree, 300., 400., 0., 2., true );
   //drawDeltaR( tree, 300., 400., 0., 2., false );
 
+  std::cout << "-> Starting draw images..." << std::endl;
   drawImages( tree );
 
   return 0;
@@ -70,8 +73,13 @@ void drawImages( TTree* tree ) {
   int nPixLite = 60;
   float chImageLite[nPixLite];
 
+  Double_t levels[nColors+1];
+  setColors(kRed, nColors, levels);
+
   TH2D* h2_chImage = new TH2D( "chImage", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
+  h2_chImage->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
   TH2D* h2_chImageLite = new TH2D( "chImageLite", "", nPixLite, 0., drMaxCh, 1, 0., 1. );
+  h2_chImageLite->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
 
   TProfile2D* hp_chImageLite_gluon = new TProfile2D( "chImageProfLite_gluon", "", nPixLite, 0., drMaxCh, 1, 0., 1. );
   TProfile2D* hp_chImageLite_quark = new TProfile2D( "chImageProfLite_quark", "", nPixLite, 0., drMaxCh, 1, 0., 1. );
@@ -178,12 +186,13 @@ void drawImages( TTree* tree ) {
     }
 
 
-    if( iEntry%1000==0 && drawnEvents<100 ) {
+
+    if( iEntry%1000==0 && drawnEvents<100 ) { // draw some example events
 
       TCanvas* c1 = new TCanvas("c1", "", 600, 600);
       c1->cd();
 
-      setColors(kRed);
+      setColors(kRed, nColors);
 
       TH2D* h2_axes = new TH2D("axes", "", 10, -0.3, 0.3, 10, -0.3, 0.3);
       h2_axes->Draw("");
@@ -200,6 +209,8 @@ void drawImages( TTree* tree ) {
       label->AddText( Form("#eta = %.1f",eta) );
       label->Draw("same");
 
+      h2_chImage->DrawClone("col");
+      h2_chImage->GetZaxis()->SetRangeUser(0., 0.4);
       h2_chImage->Draw("col z same");
 
       gPad->RedrawAxis();
@@ -215,6 +226,9 @@ void drawImages( TTree* tree ) {
 
       label->Draw("same");
 
+      //h2_chImageLite->Draw("col z same");
+      h2_chImageLite->DrawClone("col");
+      h2_chImageLite->GetZaxis()->SetRangeUser(0., 0.4);
       h2_chImageLite->Draw("col z same");
 
       gPad->RedrawAxis();
@@ -254,7 +268,7 @@ void drawImage( TProfile2D* hp, const std::string& saveName, int baseColor ) {
   TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
   c1->cd();
 
-  setColors( baseColor );
+  setColors( baseColor, nColors );
 
   hp->Draw("col z" );
 
@@ -268,20 +282,32 @@ void drawImage( TProfile2D* hp, const std::string& saveName, int baseColor ) {
 }
 
 
-void setColors( int baseColor ) {
+void setColors( int baseColor, int nColors, Double_t* levels ) {
 
-  int colors[255];
+  int colors[nColors];
   colors[0] = kWhite;
   colors[1] = baseColor-10;
   colors[2] = baseColor-7;
   colors[3] = baseColor-4;
-  colors[4] = baseColor;
-  colors[5] = baseColor+1;
-  colors[6] = baseColor+2;
-  colors[7] = baseColor+3;
-  colors[8] = baseColor+4;
-  colors[9] = kBlack;
-  gStyle->SetPalette(10,colors);
+  for( unsigned i=4; i<nColors-1; ++i )
+    colors[i] = baseColor+i-4;
+  colors[nColors-1] = kBlack;
+  gStyle->SetPalette(nColors,colors);
+
+  if( levels!=0 ) {
+
+    levels[0] = 0.;
+    levels[1] = 1e-10;
+    Double_t levBinSize = 0.4/((Double_t)nColors-2.);
+    for( unsigned iLev = 2; iLev<(nColors); ++iLev )
+      levels[iLev] = levels[iLev-1]+levBinSize;
+    levels[nColors] = 0.4;
+
+    std::cout << "Setting levels:" << std::endl;    
+    for( unsigned i=0; i<nColors+1; ++i )
+      std::cout << " levels[" << i << "]: " << levels[i] << std::endl;
+
+  }
 
 }
 
@@ -486,7 +512,8 @@ void setStyle() {
   style->SetPadTopMargin(0.05);
   style->SetPadBottomMargin(0.15);//0.13);
   style->SetPadLeftMargin(0.15);//0.16);
-  style->SetPadRightMargin(0.05);//0.02);
+  style->SetPadRightMargin(0.2);//0.02);
+  //style->SetPadRightMargin(0.05);//0.02);
   // For the Global title:
   style->SetOptTitle(0);
   style->SetTitleFont(42);
