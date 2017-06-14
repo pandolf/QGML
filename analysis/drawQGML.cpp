@@ -256,29 +256,14 @@ void drawImage( TProfile2D* hp, const std::string& saveName, int baseColor ) {
 
   hp->Draw("col z" );
 
+  gPad->RedrawAxis();
+
   c1->SaveAs( Form("figures/%s.eps", saveName.c_str()) );
   c1->SaveAs( Form("figures/%s.pdf", saveName.c_str()) );
 
   delete c1;
   
 }
-
-
-//void drawImageLite( TProfile2D* hp, const std::string& saveName, int baseColor ) {
-//
-//  TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
-//  c1->cd();
-//
-//  setColors(baseColor);
-//
-//  hp->Draw("col z" );
-//
-//  c1->SaveAs( Form("figures/%s.eps", saveName.c_str()) );
-//  c1->SaveAs( Form("figures/%s.pdf", saveName.c_str()) );
-//
-//  delete c1;
-//  
-//}
 
 
 void setColors( int baseColor ) {
