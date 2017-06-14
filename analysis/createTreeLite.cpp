@@ -37,15 +37,17 @@ int main() {
   int isQuark;
   newTree->Branch("isQuark", &isQuark, "isQuark/I");
   int NPIX = 60;  // pixels of 0.005 from 0 to 0.3 in dR
+
+//// use the following for flat branches:
+//float chImageLite[NPIX]; 
+//for( unsigned i=0; i<NPIX; ++i )
+//  newTree->Branch( Form("chImageLite_%d", i), &chImageLite[i], Form("chImageLite_%d/F", i) );
+
+
+  // use the following for array branches:
+  newTree->Branch("NPIX", &NPIX, "NPIX/I" );
   float chImageLite[NPIX]; 
-  //newTree->Branch("NPIX", &NPIX, "NPIX/I" );
-  for( unsigned i=0; i<NPIX; ++i )
-    newTree->Branch( Form("chImageLite_%d", i), &chImageLite[i], Form("chImageLite_%d/F", i) );
-    //newTree->Branch( "chImageLite", chImageLite, "chImageLite[NPIX]/F");
-  //int NP1D = 16;  // only central +/-8 pixels so 16*16 = 256
-  //int NPIX=NP1D*NP1D;
-  //float chImageLite[NPIX]; 
-  //newTree->Branch("chImageLite", chImageLite);
+  newTree->Branch( "chImageLite", chImageLite, "chImageLite[NPIX]/F");
 
 
   int nentries = tree->GetEntries();
