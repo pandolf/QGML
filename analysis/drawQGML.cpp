@@ -14,8 +14,11 @@
 #include "TColor.h"
 
 
+bool DEBUG_ = false;
+
 
 void setStyle();
+void setColors( int baseColor );
 void drawDeltaR( TTree* tree, float ptMin, float ptMax, float etaMin, float etaMax, bool ptWeighted=true ) ;
 std::string etaString( float eta );
 void drawImages( TTree* tree );
@@ -64,7 +67,14 @@ void drawImages( TTree* tree ) {
 
   int nPixCh_1D = sqrt(nPixCh);
 
+  int nPixLite = 60;
+  float chImageLite[nPixLite];
+
   TH2D* h2_chImage = new TH2D( "chImage", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
+  TH2D* h2_chImageLite = new TH2D( "chImageLite", "", nPixLite, 0., drMaxCh, 1, 0., 1. );
+
+  TProfile2D* hp_chImageLite_gluon = new TProfile2D( "chImageProfLite_gluon", "", nPixLite, 0., drMaxCh, 1, 0., 1. );
+  TProfile2D* hp_chImageLite_quark = new TProfile2D( "chImageProfLite_quark", "", nPixLite, 0., drMaxCh, 1, 0., 1. );
 
   TProfile2D* hp_chImage_gluon = new TProfile2D( "chImageProf_gluon", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
   TProfile2D* hp_chImage_quark = new TProfile2D( "chImageProf_quark", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
@@ -73,12 +83,32 @@ void drawImages( TTree* tree ) {
   TProfile2D* hp_chImageZoom_quark = new TProfile2D( "chImageProfZoom_quark", "", 40, -0.1, 0.1, 40, -0.1, 0.1 );
 
 
+
   int nentries = tree->GetEntries();
+  nentries = 10000;
+  int drawnEvents = 0;
+
 
   for( unsigned iEntry=0; iEntry<nentries; iEntry++ ) {
 
     tree->GetEntry(iEntry);
 
+
+    // initialize lite image
+    for( unsigned i=0; i<nPixLite; i++ ) chImageLite[i]=0.;
+
+
+    if( DEBUG_ ) {
+      std::cout << "-----: " << std::endl;
+      if( partonId==21 ) 
+        std::cout << "Gluon Jet" << std::endl;
+      else
+        std::cout << "Quark Jet" << std::endl;
+      std::cout << Form("p_{T} = %.0f GeV",pt) <<std::endl;
+      std::cout << Form("#eta = %.1f",eta) <<std::endl;
+    }
+
+    // this loop on the chImage:
     for( unsigned i=0; i<nPixCh; ++i ) {
 
       int etaBin = i % nPixCh_1D;
@@ -86,28 +116,74 @@ void drawImages( TTree* tree ) {
       etaBin += 1;
       phiBin += 1;
 
-      float dEta = -0.3 + 0.005*(etaBin-1.) + 0.000001;
-      float dPhi = -0.3 + 0.005*(phiBin-1.) + 0.000001;
+      float dEta = -0.3 + 0.005*(etaBin-1.) + 0.00000001;
+      float dPhi = -0.3 + 0.005*(phiBin-1.) + 0.00000001;
 
-      //float eta = -0.3 + 0.01*(etaBin-1.) + 0.000001;
-      //float phi = -0.3 + 0.01*(phiBin-1.) + 0.000001;
+      float dR = sqrt( dEta*dEta + dPhi*dPhi );
+
+      if( dR>0.3 ) continue; //std::cout << "This shouldn't be possible." << std::endl;
+
+      int dRbin = int( dR/0.005 );
+      chImageLite[dRbin] += chImage[i];
+
+      if( DEBUG_ ) {
+        if( chImage[i]>0. ) {
+          std::cout << "chimage: " << chImage[i] << std::endl;
+          std::cout << "etaBin: " << etaBin << std::endl;
+          std::cout << "phiBin: " << phiBin << std::endl;
+          std::cout << "deta: " << dEta << std::endl;
+          std::cout << "dphi: " << dPhi << std::endl;
+          std::cout << "dR: " << dR << std::endl;
+          std::cout << "dRbin: " << dRbin << std::endl;
+        }
+      }
+
 
       h2_chImage->SetBinContent( etaBin, phiBin, chImage[i] );
 
       if( partonId==21 ) {
+
         hp_chImage_gluon->Fill( dEta, dPhi, chImage[i] );
         hp_chImageZoom_gluon->Fill( dEta, dPhi, chImage[i] );
+
       } else if ( abs(partonId)<4 ) {
+
         hp_chImage_quark->Fill( dEta, dPhi, chImage[i] );
         hp_chImageZoom_quark->Fill( dEta, dPhi, chImage[i] );
+
+
       }
 
+    } // for nPixCh
+
+    for(unsigned i=0; i<nPixLite; ++i ) {
+
+      h2_chImageLite->SetBinContent( i, 1, chImageLite[i] );
+
+      float dR = float(i)*0.005;
+
+      if( partonId==21 ) {
+        hp_chImageLite_gluon->Fill( dR, 0., chImageLite[i] );
+      } else if ( abs(partonId)<4 ) {
+        hp_chImageLite_quark->Fill( dR, 0., chImageLite[i] );
+      }
+
+    } // for nPixLite
+
+
+    if( DEBUG_ ) {
+      std::cout << std::endl << "chImageLite: " << std::endl;
+      for(unsigned i=0; i<60; ++i ) 
+        std::cout << i << " " << chImageLite[i] << std::endl;
     }
 
-    if( iEntry%1000==0 ) {
+
+    if( iEntry%1000==0 && drawnEvents<100 ) {
 
       TCanvas* c1 = new TCanvas("c1", "", 600, 600);
       c1->cd();
+
+      setColors(kRed);
 
       TH2D* h2_axes = new TH2D("axes", "", 10, -0.3, 0.3, 10, -0.3, 0.3);
       h2_axes->Draw("");
@@ -126,12 +202,33 @@ void drawImages( TTree* tree ) {
 
       h2_chImage->Draw("col z same");
 
+      gPad->RedrawAxis();
+
       c1->SaveAs( Form("figures/examples/chImage_%d.pdf", iEntry) );
       c1->SaveAs( Form("figures/examples/chImage_%d.eps", iEntry) );
 
+      c1->Clear();
+
+      TH2D* h2_axesLite = new TH2D("axesLite", "", 10, 0., 0.3, 10, 0., 2.);
+      h2_axesLite->Draw();
+
+      label->Draw("same");
+
+      h2_chImageLite->Draw("col z same");
+
+      gPad->RedrawAxis();
+
+      c1->SaveAs( Form("figures/examples/chImageLite_%d.pdf", iEntry) );
+      c1->SaveAs( Form("figures/examples/chImageLite_%d.eps", iEntry) );
+
       delete c1;
       delete h2_axes;
+      delete h2_axesLite;
       delete label;
+
+      drawnEvents++;
+
+      if( DEBUG_ ) exit(1);
 
     }
 
@@ -144,6 +241,9 @@ void drawImages( TTree* tree ) {
   drawImage( hp_chImageZoom_gluon, "chImageZoom_gluon", kRed );
   drawImage( hp_chImageZoom_quark, "chImageZoom_quark", kRed );
 
+  drawImage( hp_chImageLite_gluon, "chImageLite_gluon", kRed );
+  drawImage( hp_chImageLite_quark, "chImageLite_quark", kRed );
+
 }
 
 
@@ -152,25 +252,7 @@ void drawImage( TProfile2D* hp, const std::string& saveName, int baseColor ) {
   TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
   c1->cd();
 
-  int colors[255];
-  //colors[0] = kRed-10;
-  //colors[1] = kRed-7;
-  //colors[2] = kRed-4;
-  //colors[3] = kRed;
-  //colors[4] = kRed+1;
-  //colors[5] = kRed+2;
-  //colors[6] = kRed+3;
-  //colors[7] = kRed+4;
-  colors[0] = baseColor-10;
-  colors[1] = baseColor-7;
-  colors[2] = baseColor-4;
-  colors[3] = baseColor;
-  colors[4] = baseColor+1;
-  colors[5] = baseColor+2;
-  colors[6] = baseColor+3;
-  colors[7] = baseColor+4;
-  colors[8] = kBlack;
-  gStyle->SetPalette(9,colors);
+  setColors( baseColor );
 
   hp->Draw("col z" );
 
@@ -181,6 +263,40 @@ void drawImage( TProfile2D* hp, const std::string& saveName, int baseColor ) {
   
 }
 
+
+//void drawImageLite( TProfile2D* hp, const std::string& saveName, int baseColor ) {
+//
+//  TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+//  c1->cd();
+//
+//  setColors(baseColor);
+//
+//  hp->Draw("col z" );
+//
+//  c1->SaveAs( Form("figures/%s.eps", saveName.c_str()) );
+//  c1->SaveAs( Form("figures/%s.pdf", saveName.c_str()) );
+//
+//  delete c1;
+//  
+//}
+
+
+void setColors( int baseColor ) {
+
+  int colors[255];
+  colors[0] = kWhite;
+  colors[1] = baseColor-10;
+  colors[2] = baseColor-7;
+  colors[3] = baseColor-4;
+  colors[4] = baseColor;
+  colors[5] = baseColor+1;
+  colors[6] = baseColor+2;
+  colors[7] = baseColor+3;
+  colors[8] = baseColor+4;
+  colors[9] = kBlack;
+  gStyle->SetPalette(10,colors);
+
+}
 
 
 void drawDeltaR( TTree* tree, float ptMin, float ptMax, float etaMin, float etaMax, bool ptWeighted ) {
