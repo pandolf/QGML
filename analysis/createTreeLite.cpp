@@ -31,7 +31,7 @@ int main() {
 
 
 
-  TFile* newFile = TFile::Open("qgMiniTuple_pandas.root", "recreate");
+  TFile* newFile = TFile::Open("qgMiniTuple_lite.root", "recreate");
   TTree* newTree = new TTree("qgLite", "");
 
   int isQuark;
