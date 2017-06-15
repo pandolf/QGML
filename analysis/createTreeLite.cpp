@@ -2,6 +2,9 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#include "interface/QGMLCommon.h"
+
+
 
 bool DEBUG_ = false;
 
@@ -86,22 +89,30 @@ int main() {
 
       if( chImage[i]==0. ) continue;
 
-      int etaBin = i % nPixCh_1D;
-      int phiBin = floor((float)i/((float)nPixCh_1D));  
+      int etaBin, phiBin;
+      QGMLCommon::getEtaPhiBins( i, nPixCh_1D, etaBin, phiBin );
 
-      float dEta = -0.3 + 0.005*(etaBin-1.) + 0.000001;
-      float dPhi = -0.3 + 0.005*(phiBin-1.) + 0.000001;
+      float dEta = QGMLCommon::binToDelta(etaBin);
+      float dPhi = QGMLCommon::binToDelta(phiBin);
 
       float dR = sqrt( dEta*dEta + dPhi*dPhi );
+
+      int dRbin = int( dR/QGMLCommon::pixelSize() );
+
+      //int etaBin = i % nPixCh_1D;
+      //int phiBin = floor((float)i/((float)nPixCh_1D));  
+
+      //float dEta = -0.3 + 0.005*(etaBin-1.) + 0.000001;
+      //float dPhi = -0.3 + 0.005*(phiBin-1.) + 0.000001;
+
 
       if( DEBUG_ ) {
         std::cout << "--------------------" << std::endl;
         std::cout << "dR: " << dR << std::endl;
       }
 
-      if( dR>0.3 ) continue;
+      //if( dR>0.3 ) continue;
 
-      int dRbin = int( dR/0.005 );
 
       if( DEBUG_ ) {
         std::cout << "dRbin: " << dRbin << std::endl;
@@ -110,15 +121,6 @@ int main() {
 
       chImageLite[dRbin] = chImage[i];
 
-      //int etaBinNew = etaBin - (nPixCh_1D-NP1D)/2;
-      //int phiBinNew = phiBin - (nPixCh_1D-NP1D)/2;
-
-      //if( etaBinNew<0 || etaBinNew>=NP1D ) continue;
-      //if( phiBinNew<0 || phiBinNew>=NP1D ) continue;
-
-      //int newIndex = etaBinNew*NP1D + phiBinNew;
-      //chImageLite[newIndex] = chImage[i];
-  
     }
 
     if( DEBUG_ ) {
