@@ -13,8 +13,12 @@
 #include "TPaveText.h"
 #include "TColor.h"
 
+#include "interface/QGMLCommon.h"
+
+
 
 bool DEBUG_ = false;
+bool FAST_ = false;
 int nColors = 9;
 float zMax = 0.2;
 
@@ -27,7 +31,12 @@ void drawImages( TTree* tree );
 void drawImage( TProfile2D* hp, const std::string& saveName, int baseColor );
 
 
-int main() {
+int main( int argc, char* argv[] ) {
+
+  if( argc>1 ) {
+    std::string fastFlag(argv[1]);
+    if( fastFlag=="fast" ) FAST_=true;
+  }
 
   setStyle();
 
@@ -36,9 +45,18 @@ int main() {
   TFile* file = TFile::Open("qgMiniTuple.root", "read");
   TTree* tree = (TTree*)file->Get("qgMiniTupleAK4chs/qgMiniTuple");
 
-  //std::cout << "-> Starting draw deltaR..." << std::endl;
-  //drawDeltaR( tree, 300., 400., 0., 2., true );
-  //drawDeltaR( tree, 300., 400., 0., 2., false );
+  if( !FAST_ ) {
+
+    std::cout << "-> Starting draw deltaR..." << std::endl;
+    drawDeltaR( tree, 300., 400., 0., 2., true );
+    drawDeltaR( tree, 300., 400., 0., 2., false );
+
+  }
+
+  gStyle->SetPadTopMargin(0.1);
+  gStyle->SetPadBottomMargin(0.15);//0.13);
+  gStyle->SetPadLeftMargin(0.15);//0.16);
+  gStyle->SetPadRightMargin(0.15);//0.02);
 
   std::cout << "-> Starting draw images..." << std::endl;
   drawImages( tree );
@@ -103,8 +121,8 @@ std::cout << "nPixCh_1D: " << nPixCh_1D << std::endl;
 
 
   int nentries = tree->GetEntries();
-  nentries = 5000;
-  //nentries = 50000;
+  if( FAST_ )
+    nentries = 5000;
   int drawnEvents = 0;
 
 
@@ -130,30 +148,32 @@ std::cout << "nPixCh_1D: " << nPixCh_1D << std::endl;
     // this loop on the chImage:
     for( unsigned i=0; i<nPixCh; ++i ) {
 
-      int etaBin = i % (nPixCh_1D);
-      int phiBin = floor((float)i/((float)(nPixCh_1D)));  
-      etaBin += 1;
-      phiBin += 1;
+      int etaBin, phiBin;
+      QGMLCommon::getEtaPhiBins( i, nPixCh_1D, etaBin, phiBin );
 
-      float dEta = -0.3 + 0.005*(((float)etaBin)-1.) + 0.00001; // the small extra to avoid annoying ROOT binning problems
-      float dPhi = -0.3 + 0.005*(((float)phiBin)-1.) + 0.00001;
-
+      float dEta = QGMLCommon::binToDelta(etaBin);
+      float dPhi = QGMLCommon::binToDelta(phiBin);
 
       float dR = sqrt( dEta*dEta + dPhi*dPhi );
 
+      int dRbin = int( dR/QGMLCommon::pixelSize() );
+
+      //int etaBin = i % (nPixCh_1D);
+      //int phiBin = floor((float)i/((float)(nPixCh_1D)));  
+      //etaBin += 1;
+      //phiBin += 1;
+
+      //float dEta = -0.3 + 0.005*(((float)etaBin)-1.) + 0.00001; // the small extra to avoid annoying ROOT binning problems
+      //float dPhi = -0.3 + 0.005*(((float)phiBin)-1.) + 0.00001;
+
+
+      //float dR = sqrt( dEta*dEta + dPhi*dPhi );
+
       //if( dR>0.3 ) continue; //std::cout << "This shouldn't be possible." << std::endl;
 
-      int dRbin = floor( dR/0.005 );
       if( dRbin<nPixLite )
         chImageLite[dRbin] += chImage[i];
 
-//if( dPhi<=0.0001 && dPhi>0. ) {
-//std::cout << "dEta: " << dEta << std::endl;
-//std::cout << "dR: " << dR << std::endl;
-//std::cout << "etaBin: " << etaBin << std::endl;
-//std::cout << "dRbin: " << dRbin << std::endl;
-//std::cout << std::endl;
-//}
 
       if( DEBUG_ ) {
         if( chImage[i]>0. ) {
@@ -537,11 +557,10 @@ void setStyle() {
   style->SetFrameLineStyle(1);
   style->SetFrameLineWidth(1);
   // Margins:
-  style->SetPadTopMargin(0.1);
+  style->SetPadTopMargin(0.05);
   style->SetPadBottomMargin(0.15);//0.13);
   style->SetPadLeftMargin(0.15);//0.16);
-  style->SetPadRightMargin(0.15);//0.02);
-  //style->SetPadRightMargin(0.05);//0.02);
+  style->SetPadRightMargin(0.05);//0.02);
   // For the Global title:
   style->SetOptTitle(0);
   style->SetTitleFont(42);
