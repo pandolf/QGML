@@ -18,6 +18,10 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/
 createTreeLite: createTreeLite.cpp 
 	$(CC) -Wall $(INCLUDES) -o createTreeLite createTreeLite.cpp $(ROOTFLAG) $(EXTRALIBS)
 
-drawQGML: drawQGML.cpp 
-	$(CC) -Wall $(INCLUDES) -o drawQGML drawQGML.cpp $(ROOTFLAG) $(EXTRALIBS)
+drawQGML: drawQGML.cpp QGMLCommon.o
+	$(CC) -Wall $(INCLUDES) -o drawQGML drawQGML.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
 
+
+
+QGMLCommon.o:
+	$(CC) -Wall $(INCLUDES) -c ../src/QGMLCommon.cc $(ROOTFLAG) $(EXTRALIBS)
