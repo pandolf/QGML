@@ -17,7 +17,7 @@ weightsfile = 'trainings/testQG_CNN.h5'
 qg_cnn = keras.models.load_model(weightsfile)
 
 
-f = ROOT.TFile.Open('qgMiniTuple_lite.root')
+f = ROOT.TFile.Open('qgMiniTupleLite.root')
 t = f.Get('qgLite')
 
 h1_q = ROOT.TH1D('qgl_q', '', 30, 0., 1.0001)
@@ -95,7 +95,6 @@ for e in t:
   xnp = np.array([x])
 
   cnn = qg_cnn.predict(xnp,verbose=0)
-  print( cnn )
 
   if isQuark:
     h1_q.Fill(qgl)
