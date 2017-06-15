@@ -15,7 +15,8 @@
 
 
 bool DEBUG_ = false;
-int nColors = 10;
+int nColors = 9;
+float zMax = 0.2;
 
 
 void setStyle();
@@ -69,6 +70,8 @@ void drawImages( TTree* tree ) {
 
 
   int nPixCh_1D = sqrt(nPixCh);
+std::cout << "nPixCh: " << nPixCh << std::endl;
+std::cout << "nPixCh_1D: " << nPixCh_1D << std::endl;
 
   int nPixLite = 60;
   float chImageLite[nPixLite];
@@ -76,24 +79,32 @@ void drawImages( TTree* tree ) {
   Double_t levels[nColors+1];
   setColors(kRed, nColors, levels);
 
+
   TH2D* h2_chImage = new TH2D( "chImage", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
-  h2_chImage->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
   TH2D* h2_chImageLite = new TH2D( "chImageLite", "", nPixLite, 0., drMaxCh, 1, 0., 1. );
+  h2_chImage->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
   h2_chImageLite->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
 
   TProfile2D* hp_chImageLite_gluon = new TProfile2D( "chImageProfLite_gluon", "", nPixLite, 0., drMaxCh, 1, 0., 1. );
   TProfile2D* hp_chImageLite_quark = new TProfile2D( "chImageProfLite_quark", "", nPixLite, 0., drMaxCh, 1, 0., 1. );
+  hp_chImageLite_gluon->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
+  hp_chImageLite_quark->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
 
   TProfile2D* hp_chImage_gluon = new TProfile2D( "chImageProf_gluon", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
   TProfile2D* hp_chImage_quark = new TProfile2D( "chImageProf_quark", "", nPixCh_1D, -drMaxCh, drMaxCh, nPixCh_1D, -drMaxCh, drMaxCh );
+  hp_chImage_gluon->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
+  hp_chImage_quark->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
 
   TProfile2D* hp_chImageZoom_gluon = new TProfile2D( "chImageProfZoom_gluon", "", 40, -0.1, 0.1, 40, -0.1, 0.1 );
   TProfile2D* hp_chImageZoom_quark = new TProfile2D( "chImageProfZoom_quark", "", 40, -0.1, 0.1, 40, -0.1, 0.1 );
+  hp_chImageZoom_gluon->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
+  hp_chImageZoom_quark->SetContour((sizeof(levels)/sizeof(Double_t)), levels);
 
 
 
   int nentries = tree->GetEntries();
-  nentries = 50000;
+  nentries = 5000;
+  //nentries = 50000;
   int drawnEvents = 0;
 
 
@@ -119,20 +130,30 @@ void drawImages( TTree* tree ) {
     // this loop on the chImage:
     for( unsigned i=0; i<nPixCh; ++i ) {
 
-      int etaBin = i % nPixCh_1D;
-      int phiBin = floor((float)i/((float)nPixCh_1D));  
+      int etaBin = i % (nPixCh_1D);
+      int phiBin = floor((float)i/((float)(nPixCh_1D)));  
       etaBin += 1;
       phiBin += 1;
 
-      float dEta = -0.3 + 0.005*(etaBin-1.) + 0.00000001;
-      float dPhi = -0.3 + 0.005*(phiBin-1.) + 0.00000001;
+      float dEta = -0.3 + 0.005*(((float)etaBin)-1.) + 0.00001; // the small extra to avoid annoying ROOT binning problems
+      float dPhi = -0.3 + 0.005*(((float)phiBin)-1.) + 0.00001;
+
 
       float dR = sqrt( dEta*dEta + dPhi*dPhi );
 
-      if( dR>0.3 ) continue; //std::cout << "This shouldn't be possible." << std::endl;
+      //if( dR>0.3 ) continue; //std::cout << "This shouldn't be possible." << std::endl;
 
-      int dRbin = int( dR/0.005 );
-      chImageLite[dRbin] += chImage[i];
+      int dRbin = floor( dR/0.005 );
+      if( dRbin<nPixLite )
+        chImageLite[dRbin] += chImage[i];
+
+//if( dPhi<=0.0001 && dPhi>0. ) {
+//std::cout << "dEta: " << dEta << std::endl;
+//std::cout << "dR: " << dR << std::endl;
+//std::cout << "etaBin: " << etaBin << std::endl;
+//std::cout << "dRbin: " << dRbin << std::endl;
+//std::cout << std::endl;
+//}
 
       if( DEBUG_ ) {
         if( chImage[i]>0. ) {
@@ -149,17 +170,19 @@ void drawImages( TTree* tree ) {
 
       h2_chImage->SetBinContent( etaBin, phiBin, chImage[i] );
 
-      if( partonId==21 ) {
+      if( chImage[i]>0. ) {
+        if( partonId==21 ) {
 
-        hp_chImage_gluon->Fill( dEta, dPhi, chImage[i] );
-        hp_chImageZoom_gluon->Fill( dEta, dPhi, chImage[i] );
+          hp_chImage_gluon    ->Fill( dEta, dPhi, chImage[i] );
+          hp_chImageZoom_gluon->Fill( dEta, dPhi, chImage[i] );
 
-      } else if ( abs(partonId)<4 ) {
+        } else if ( abs(partonId)<4 ) {
 
-        hp_chImage_quark->Fill( dEta, dPhi, chImage[i] );
-        hp_chImageZoom_quark->Fill( dEta, dPhi, chImage[i] );
+          hp_chImage_quark    ->Fill( dEta, dPhi, chImage[i] );
+          hp_chImageZoom_quark->Fill( dEta, dPhi, chImage[i] );
 
 
+        }
       }
 
     } // for nPixCh
@@ -168,12 +191,14 @@ void drawImages( TTree* tree ) {
 
       h2_chImageLite->SetBinContent( i, 1, chImageLite[i] );
 
-      float dR = float(i)*0.005;
+      float dR = float(i)*0.005 + 0.0001;
 
-      if( partonId==21 ) {
-        hp_chImageLite_gluon->Fill( dR, 0., chImageLite[i] );
-      } else if ( abs(partonId)<4 ) {
-        hp_chImageLite_quark->Fill( dR, 0., chImageLite[i] );
+      if( chImageLite[i]>0. ) {
+        if( partonId==21 ) {
+          hp_chImageLite_gluon->Fill( dR, 0., chImageLite[i] );
+        } else if ( abs(partonId)<4 ) {
+          hp_chImageLite_quark->Fill( dR, 0., chImageLite[i] );
+        }
       }
 
     } // for nPixLite
@@ -210,7 +235,8 @@ void drawImages( TTree* tree ) {
       label->Draw("same");
 
       h2_chImage->DrawClone("col");
-      h2_chImage->GetZaxis()->SetRangeUser(0., 0.4);
+      h2_chImage->GetZaxis()->SetRangeUser(0., zMax);
+      h2_chImage->GetZaxis()->SetNdivisions(804,false);
       h2_chImage->Draw("col z same");
 
       gPad->RedrawAxis();
@@ -228,7 +254,8 @@ void drawImages( TTree* tree ) {
 
       //h2_chImageLite->Draw("col z same");
       h2_chImageLite->DrawClone("col");
-      h2_chImageLite->GetZaxis()->SetRangeUser(0., 0.4);
+      h2_chImageLite->GetZaxis()->SetRangeUser(0., zMax);
+      h2_chImageLite->GetZaxis()->SetNdivisions(804,false);
       h2_chImageLite->Draw("col z same");
 
       gPad->RedrawAxis();
@@ -270,7 +297,10 @@ void drawImage( TProfile2D* hp, const std::string& saveName, int baseColor ) {
 
   setColors( baseColor, nColors );
 
-  hp->Draw("col z" );
+  hp->DrawClone("col");
+  hp->GetZaxis()->SetRangeUser(0., zMax);
+  hp->GetZaxis()->SetNdivisions(804,false);
+  hp->Draw("col z same");
 
   gPad->RedrawAxis();
 
@@ -289,19 +319,17 @@ void setColors( int baseColor, int nColors, Double_t* levels ) {
   colors[1] = baseColor-10;
   colors[2] = baseColor-7;
   colors[3] = baseColor-4;
-  for( unsigned i=4; i<nColors-1; ++i )
+  for( unsigned i=4; i<nColors; ++i )
     colors[i] = baseColor+i-4;
-  colors[nColors-1] = kBlack;
   gStyle->SetPalette(nColors,colors);
 
   if( levels!=0 ) {
 
     levels[0] = 0.;
     levels[1] = 1e-10;
-    Double_t levBinSize = 0.4/((Double_t)nColors-2.);
-    for( unsigned iLev = 2; iLev<(nColors); ++iLev )
+    Double_t levBinSize = zMax/((Double_t)nColors-1.);
+    for( unsigned iLev = 2; iLev<(nColors+1); ++iLev )
       levels[iLev] = levels[iLev-1]+levBinSize;
-    levels[nColors] = 0.4;
 
     std::cout << "Setting levels:" << std::endl;    
     for( unsigned i=0; i<nColors+1; ++i )
@@ -509,10 +537,10 @@ void setStyle() {
   style->SetFrameLineStyle(1);
   style->SetFrameLineWidth(1);
   // Margins:
-  style->SetPadTopMargin(0.05);
+  style->SetPadTopMargin(0.1);
   style->SetPadBottomMargin(0.15);//0.13);
   style->SetPadLeftMargin(0.15);//0.16);
-  style->SetPadRightMargin(0.2);//0.02);
+  style->SetPadRightMargin(0.15);//0.02);
   //style->SetPadRightMargin(0.05);//0.02);
   // For the Global title:
   style->SetOptTitle(0);
