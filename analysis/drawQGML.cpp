@@ -122,7 +122,7 @@ std::cout << "nPixCh_1D: " << nPixCh_1D << std::endl;
 
   int nentries = tree->GetEntries();
   if( FAST_ )
-    nentries = 5000;
+    nentries = 20000;
   int drawnEvents = 0;
 
 
@@ -242,7 +242,7 @@ std::cout << "nPixCh_1D: " << nPixCh_1D << std::endl;
       TH2D* h2_axes = new TH2D("axes", "", 10, -0.3, 0.3, 10, -0.3, 0.3);
       h2_axes->Draw("");
 
-      TPaveText* label = new TPaveText(0.2, 0.75, 0.55, 0.9, "brNDC");
+      TPaveText* label = new TPaveText(0.18, 0.72, 0.52, 0.87, "brNDC");
       label->SetTextSize(0.032);
       label->SetFillColor(0);
       label->SetTextAlign(11);
@@ -254,7 +254,7 @@ std::cout << "nPixCh_1D: " << nPixCh_1D << std::endl;
       label->AddText( Form("#eta = %.1f",eta) );
       label->Draw("same");
 
-      h2_chImage->DrawClone("col");
+      h2_chImage->DrawClone("col same");
       h2_chImage->GetZaxis()->SetRangeUser(0., zMax);
       h2_chImage->GetZaxis()->SetNdivisions(804,false);
       h2_chImage->Draw("col z same");
@@ -273,7 +273,7 @@ std::cout << "nPixCh_1D: " << nPixCh_1D << std::endl;
       label->Draw("same");
 
       //h2_chImageLite->Draw("col z same");
-      h2_chImageLite->DrawClone("col");
+      h2_chImageLite->DrawClone("col same");
       h2_chImageLite->GetZaxis()->SetRangeUser(0., zMax);
       h2_chImageLite->GetZaxis()->SetNdivisions(804,false);
       h2_chImageLite->Draw("col z same");
