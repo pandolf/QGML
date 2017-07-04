@@ -10,6 +10,7 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Embedding
 from keras.layers import LSTM
 from keras import optimizers
+from keras.callbacks import ModelCheckpoint
 
 from sklearn.model_selection import train_test_split
 
@@ -20,6 +21,7 @@ f = open(filename,'r')
 npzf = np.load(f)
 y = npzf['y']
 X = npzf['X']
+X = np.fliplr(X)
 
 print 'Read data from file: ' + filename
 
@@ -71,9 +73,15 @@ print('Train...')
 #for x,y in zip(X_train, y_train):
 #  model.train(np.array([x]),[y])
 
+
+filepath="weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
+checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+callbacks_list = [checkpoint]
+
 model.fit(X_train, y_train,
           batch_size=100,
           epochs=15,
+          callbacks=callbacks_list,
           validation_data=(X_test, y_test))
 
 score, acc = model.evaluate(X_test, y_test,
