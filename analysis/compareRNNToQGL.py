@@ -3,6 +3,7 @@
 import ROOT
 import numpy as np
 import json
+import os
 
 import keras
 from keras.models import Sequential
@@ -31,8 +32,14 @@ def getROC( h1_q, h1_g ):
 def main():
 
   setStyle()
+
+  rnn_training = 'improvement-10-0.73'
   
-  weightsfile = 'weights-improvement-10-0.73.hdf5'
+  weightsfile = 'trainingsRNN/weights-'+rnn_training+'.hdf5'
+
+  figsfolder = 'figures_'+rnn_training
+
+  os.system('mkdir -p '+figsfolder)
   
   qg_rnn = keras.models.load_model(weightsfile)
   
@@ -43,6 +50,8 @@ def main():
   npzf = np.load(f)
   y = npzf['y']
   qgl = npzf['qgl']
+  pt = npzf['pt']
+  eta = npzf['eta']
   X = npzf['X']
   X = np.fliplr(X)
   
@@ -63,6 +72,10 @@ def main():
   
     if i%10000==0 :
       print 'Entry: %d / %d' %(i,n)
+
+    if (pt[i]<300.) : continue
+    if (pt[i]>400.) : continue
+    if (abs(eta[i])>1.3) : continue
   
     rnn = qg_rnn.predict(X[i].reshape(-1,50,2),verbose=0)
   
@@ -81,27 +94,43 @@ def main():
   roc_qgl.SetMarkerStyle(20)
   roc_rnn.SetMarkerStyle(24)
   
-  roc_qgl.SetMarkerSize(2)
-  roc_rnn.SetMarkerSize(2)
+  roc_qgl.SetMarkerSize(1.6)
+  roc_rnn.SetMarkerSize(1.6)
   
   roc_qgl.SetMarkerColor(48)
   roc_rnn.SetMarkerColor(48)
   
   
   c1 = ROOT.TCanvas('c1', '', 600, 600)
-  h2 = ROOT.TH2D('axes', '', 10, 0., 1.0001, 10, 0., 1.0001)
+  h2 = ROOT.TH2D('axes0', '', 10, 0., 1.0001, 10, 0., 1.0001)
   h2.SetXTitle('Quark Jet Efficiency')
   h2.SetYTitle('Gluon Jet Rejection')
   h2.Draw()
+
+  (label_top,label_cms)=getLabels()
+  label_top.Draw('same')
+  label_cms.Draw('same')
   
   diag = ROOT.TLine(0.,1.,1.,0.)
   diag.Draw('same')
+
+  legend = ROOT.TLegend(0.2, 0.25, 0.5, 0.45)
+  legend.SetFillColor(0)
+  legend.SetTextSize(0.038)
+  legend.SetHeader("300 < p_{T} < 400 GeV, |#eta|<1.3")
+  legend.AddEntry( roc_qgl, "QG LD", "P" )
+  legend.AddEntry( roc_rnn, "QG RNN", "P" )
+  legend.Draw("same")
   
   roc_qgl.Draw('psame')
   roc_rnn.Draw('psame')
   
-  c1.SaveAs('prova.eps')
-  
+  c1.SaveAs(figsfolder+'/rnn_vs_qgl_pt300_400_eta0p0_1p3.eps')
+  c1.SaveAs(figsfolder+'/rnn_vs_qgl_pt300_400_eta0p0_1p3.pdf')
+
+  drawQvsG( figsfolder, h1_qgl_q, h1_qgl_g, 'qgl', 'QG Likelihood Discriminant' )
+  drawQvsG( figsfolder, h1_rnn_q, h1_rnn_g, 'rnn', 'QG RNN' )
+
   h1_qgl_q.Write() 
   h1_qgl_g.Write() 
   
@@ -112,6 +141,76 @@ def main():
   roc_rnn.Write()
   
   outfile.Close()
+
+
+
+def drawQvsG( folder, h1_q, h1_g, savename, name='' ):
+
+  max_g = h1_g.GetMaximum()/h1_g.Integral()
+  max_q = h1_q.GetMaximum()/h1_q.Integral()
+  max_y = max(max_g,max_q)*1.2
+
+  c1 = ROOT.TCanvas('c2','',600,600)
+  c1.cd()
+
+  h2 = ROOT.TH2D('axes','', 10, 0., 1.0001, 10, 0., max_y)
+  h2.SetXTitle(name)
+  h2.SetYTitle('Normalized to Unity')
+  h2.Draw()
+
+  (label_top,label_cms)=getLabels()
+  label_top.Draw('same')
+  label_cms.Draw('same')
+
+  h1_q.SetFillColor(38)
+  h1_g.SetFillColor(46)
+
+  h1_q.SetLineColor(38)
+  h1_g.SetLineColor(46)
+
+  h1_q.SetFillStyle(3004)
+  h1_g.SetFillStyle(3005)
+
+  h1_q.SetLineWidth(2)
+  h1_g.SetLineWidth(2)
+
+  legend = ROOT.TLegend(0.35,0.7,0.63,0.92)
+  legend.SetFillColor(0)
+  legend.SetTextSize(0.038)
+  legend.SetHeader("300 < p_{T} < 400 GeV, |#eta| < 1.3")
+  legend.AddEntry(h1_q, 'Quark Jets', 'F')
+  legend.AddEntry(h1_g, 'Gluon Jets', 'F')
+  legend.Draw('same')
+
+  h1_g.DrawNormalized('same')
+  h1_q.DrawNormalized('same')
+
+  c1.SaveAs(folder+'/'+savename+'_pt300_400_eta0p0_1p3.eps')
+  c1.SaveAs(folder+'/'+savename+'_pt300_400_eta0p0_1p3.pdf')
+
+   
+def getLabels():
+
+  label_top = ROOT.TPaveText(0.4,0.959,0.975,0.963, "brNDC")
+  label_top.SetBorderSize(0)
+  label_top.SetFillColor(0)
+  label_top.SetTextSize(0.038)
+  label_top.SetTextAlign(31)
+  label_top.SetTextFont(42)
+  label_top.AddText("#sqrt{s} = 13 TeV")
+  label_top.Draw("same")
+
+
+  label_cms = ROOT.TPaveText(0.143,0.96,0.27,0.965, "brNDC")
+  label_cms.SetBorderSize(0)
+  label_cms.SetFillColor(0)
+  label_cms.SetTextSize(0.042)
+  label_cms.SetTextAlign(11)
+  label_cms.SetTextFont(42)
+  label_cms.AddText( "CMS Simulation" )
+  label_cms.Draw('same')
+
+  return (label_top,label_cms)
 
 
 
