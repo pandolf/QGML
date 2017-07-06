@@ -13,6 +13,8 @@ fivePercent = int(float(n)/20.)
 qg_array = []
 qgl_array = []
 word_array = []
+pt_array = []
+eta_array = []
 
 print 'Tree has %d entries' % (n)
 print 'Looping on tree to build arrays...'
@@ -59,6 +61,8 @@ for e in t:
   word_array.append( x )
 
   qgl_array.append(e.qgl)
+  pt_array.append(e.pt)
+  eta_array.append(e.eta)
 
 
 
@@ -68,10 +72,12 @@ print 'Done looping.'
 y = np.array(qg_array)
 X = np.array(word_array)
 qgl = np.array(qgl_array)
+pt = np.array(pt_array)
+eta = np.array(eta_array)
 
 filename = 'qgNumpyRNN.npz'
 f = open(filename,'w')
-np.savez(f,X=X,y=y,qgl=qgl)
+np.savez(f,X=X,y=y,qgl=qgl,pt=pt,eta=eta)
 f.close()
 
 print 'Saved numpy arrays to file: '+filename
