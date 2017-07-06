@@ -11,6 +11,7 @@ n = t.GetEntries()
 fivePercent = int(float(n)/20.)
 
 qg_array = []
+qgl_array = []
 word_array = []
 
 print 'Tree has %d entries' % (n)
@@ -22,6 +23,10 @@ max_features = 50
 
 for e in t:
 
+  iEv = iEv+1
+
+  #if iEv%10000 == 0:
+  #  print "  Entry: %d / %d" % (iEv,n)
   if iEv%fivePercent == 0 and iEv>0:
     print "  %.0f%% complete" % (100.*iEv/(float(n)))
   if iEv>=n : break
@@ -48,18 +53,13 @@ for e in t:
       else:
         x.append( [0.0, 0.0] )
 
-  #while len(x)<max_features:
-  #  x.append( [0.0, 0.0] )
 
   xnp = np.array(x, dtype=float)
-  #if xnp.dtype!='float64': 
-  #  print '\n\n'
-  #  print x
-  #  print 'dtype: %s' % (xnp.dtype)
 
   word_array.append( x )
 
-  iEv = iEv+1
+  qgl_array.append(e.qgl)
+
 
 
 
@@ -67,10 +67,11 @@ print 'Done looping.'
 
 y = np.array(qg_array)
 X = np.array(word_array)
+qgl = np.array(qgl_array)
 
 filename = 'qgNumpyRNN.npz'
 f = open(filename,'w')
-np.savez(f,X=X,y=y)
+np.savez(f,X=X,y=y,qgl=qgl)
 f.close()
 
 print 'Saved numpy arrays to file: '+filename
