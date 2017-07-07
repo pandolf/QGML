@@ -3,7 +3,7 @@
 import ROOT
 import numpy as np
 import json
-import os
+import os,sys
 
 import keras
 from keras.models import Sequential
@@ -31,17 +31,26 @@ def getROC( h1_q, h1_g ):
 
 def main():
 
-  setStyle()
+  if len(sys.argv) < 2 :
+    print('Please provide name of training.')
+    exit()
 
-  rnn_training = 'improvement-10-0.73'
+  rnn_training = sys.argv[1]
+
+
+  #rnn_training = 'improvement-10-0.73'
   
-  weightsfile = 'trainingsRNN/weights-'+rnn_training+'.hdf5'
+  weightsfile = 'trainingsRNN/'+rnn_training+'/final_RNN.hdf5'
+  #weightsfile = 'trainingsRNN/weights-'+rnn_training+'.hdf5'
 
-  figsfolder = 'figures_'+rnn_training
+  figsfolder = 'trainingsRNN/'+rnn_training+'/figures'
 
   os.system('mkdir -p '+figsfolder)
   
   qg_rnn = keras.models.load_model(weightsfile)
+  print('Loaded model: '+weightsfile)
+
+  setStyle()
   
   
   filename = 'qgNumpyRNN.npz'
@@ -56,7 +65,7 @@ def main():
   X = np.fliplr(X)
   
   n = len(y)
-  n = 10000
+  n = 20000
   print 'Total entries: ' + str(n)
   
   outfile = ROOT.TFile.Open('prova.root', 'recreate')
@@ -114,10 +123,10 @@ def main():
   diag = ROOT.TLine(0.,1.,1.,0.)
   diag.Draw('same')
 
-  legend = ROOT.TLegend(0.2, 0.25, 0.5, 0.45)
+  legend = ROOT.TLegend(0.2, 0.2, 0.5, 0.4)
   legend.SetFillColor(0)
   legend.SetTextSize(0.038)
-  legend.SetHeader("300 < p_{T} < 400 GeV, |#eta|<1.3")
+  legend.SetHeader("300 < p_{T} < 400 GeV, |#eta| < 1.3")
   legend.AddEntry( roc_qgl, "QG LD", "P" )
   legend.AddEntry( roc_rnn, "QG RNN", "P" )
   legend.Draw("same")
