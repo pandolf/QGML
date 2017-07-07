@@ -1,8 +1,11 @@
 #! /usr/bin/python
 
+
 import numpy as np
 import ROOT
 import json as simplejson
+
+import datetime
 
 import keras
 from keras.models import Sequential
@@ -22,6 +25,7 @@ npzf = np.load(f)
 y = npzf['y']
 X = npzf['X']
 X = np.fliplr(X)
+#X = X.reshape(-1,1,60)
 
 print 'Read data from file: ' + filename
 
@@ -53,39 +57,51 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=0.2,random_st
 #y_test  = y.loc[ train_frac*Nrows:]
 
 
+#model paramters:
+units = 200
+dropout = 0.2
+recurrent_dropout = 0.2
+batch_size = 100
+epochs = 100
 
 
 # build the model: a single LSTM
-print('Build model...')
+print('Building LSTM...')
+print('  units = %d' % units)
+print('  dropout = %f' % dropout)
+print('  recurrent_dropout = %f' % recurrent_dropout)
+print('  batch_size = %d' % batch_size)
+print('  epochs = %d' % epochs)
+
+
 model = Sequential()
-#model.add(Embedding((X.shape[1],X.shape[2]), 128))
-#model.add(LSTM(128, dropout=0.2, recurrent_dropout=0.2))
-model.add(LSTM(200,input_shape=(X.shape[1],X.shape[2]), dropout=0.2, recurrent_dropout=0.2))
+model.add(LSTM(units,input_shape=(X.shape[1:]), dropout=dropout, recurrent_dropout=recurrent_dropout))
 model.add(Dense(1, activation='sigmoid'))
 
 
-# try using different optimizers and different optimizer configs
 model.compile(loss='binary_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
 
 print('Train...')
-#for x,y in zip(X_train, y_train):
-#  model.train(np.array([x]),[y])
 
 
-filepath="weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
+folder = ('%d-%d-%d' % (datetime.date.today().year,datetime.date.today().month,datetime.date.today().day))
+
+os.system('mkdir -p '+folder)
+
+filepath="trainingsRNN/"+folder+"/weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
 model.fit(X_train, y_train,
-          batch_size=100,
-          epochs=15,
+          batch_size=batch_size,
+          epochs=epochs,
           callbacks=callbacks_list,
           validation_data=(X_test, y_test))
 
 score, acc = model.evaluate(X_test, y_test,
-                            batch_size=100)
+                            batch_size=batch_size)
 print('Test score:', score)
 print('Test accuracy:', acc)
 
@@ -94,9 +110,9 @@ print('Test accuracy:', acc)
 
 ### saving the model
 model_json = model.to_json()
-with open("trainings/testQG_RNN.json", "w") as json_file:
+with open("trainingsRNN/testQG_RNN.json", "w") as json_file:
     json_file.write(simplejson.dumps(simplejson.loads(model_json), indent=4))
 
 
 ##saving the training
-model.save("trainings/testQG_RNN.h5")
+model.save('trainingsRNN/'+folder+'/final_RNN.hdf5')
