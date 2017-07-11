@@ -66,13 +66,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=0.2,random_st
 
 
 #model paramters:
-units = 2
-#units = 200
+units = 200
 dropout = 0.2
 recurrent_dropout = 0.2
 batch_size = 100
-epochs = 4
-#epochs = 100
+epochs = 100
 
 
 # build the model: a single LSTM
