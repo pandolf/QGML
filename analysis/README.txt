@@ -30,7 +30,7 @@ the date of the training, eg '2017-7-11']
 
 
 
-*** FOR CNN:
+*** FOR CNN (training not working at the moment):
 
 - make some preliminary plots, just for fun (jet images etc):
 
