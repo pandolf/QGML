@@ -21,7 +21,10 @@ createTreeLite: createTreeLite.cpp QGMLCommon.o
 drawQGML: drawQGML.cpp QGMLCommon.o
 	$(CC) -Wall $(INCLUDES) -o drawQGML drawQGML.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
 
+drawRNNTrainTest: drawRNNTrainTest.cpp QGMLCommon.o
+	$(CC) -Wall $(INCLUDES) -o drawRNNTrainTest drawRNNTrainTest.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
 
 
-QGMLCommon.o:
+
+QGMLCommon.o: ../src/QGMLCommon.cc
 	$(CC) -Wall $(INCLUDES) -c ../src/QGMLCommon.cc $(ROOTFLAG) $(EXTRALIBS)
