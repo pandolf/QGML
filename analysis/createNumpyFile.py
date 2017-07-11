@@ -12,9 +12,10 @@ fivePercent = int(float(n)/20.)
 
 qg_array = []
 qgl_array = []
-word_array = []
 pt_array = []
 eta_array = []
+X_array = []
+#ph_array = []
 
 print 'Tree has %d entries' % (n)
 print 'Looping on tree to build arrays...'
@@ -46,19 +47,35 @@ for e in t:
     continue
     
 
-  x = []
+  x_ch = []
 
 
   for i in range(max_features):
       if i<e.nch:
-        x.append( [e.pt_ch[i], e.dr_ch[i] ] )
+        x_ch.append( [e.pt_ch[i], e.dr_ch[i] ] )
       else:
-        x.append( [0.0, 0.0] )
+        x_ch.append( [0.0, 0.0] )
 
 
-  xnp = np.array(x, dtype=float)
 
-  word_array.append( x )
+
+
+ # x_ph = []
+
+
+ # for i in range(max_features):
+ #     if i<e.nph:
+ #       x_ph.append( [e.pt_ph[i], e.dr_ph[i] ] )
+ #     else:
+ #       x_ph.append( [0.0, 0.0] )
+
+
+ # x = [ x_ch, x_ph ]
+
+  xnp = np.array(x_ch, dtype=float)
+  #xnp = np.array(x, dtype=float)
+
+  X_array.append(xnp)
 
   qgl_array.append(e.qgl)
   pt_array.append(e.pt)
@@ -70,7 +87,7 @@ for e in t:
 print 'Done looping.'
 
 y = np.array(qg_array)
-X = np.array(word_array)
+X = np.array(X_array)
 qgl = np.array(qgl_array)
 pt = np.array(pt_array)
 eta = np.array(eta_array)
