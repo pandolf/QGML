@@ -3,8 +3,16 @@
 import numpy as np
 import ROOT
 
+import sys
 
-f = ROOT.TFile.Open('qgMiniTuple.root', 'read')
+
+
+fileName = 'qgMiniTuple.root'
+if len(sys.argv)>1:
+  fileName = sys.argv[1]
+
+
+f = ROOT.TFile.Open(fileName, 'read')
 t = f.Get('qgMiniTupleAK4chs/qgMiniTuple')
 
 n = t.GetEntries()
