@@ -52,6 +52,7 @@ void createTreeLiteQCD( const std::string& path, const std::string& name ) {
   TTree* tree_lite = new TTree("tlite", "");
 
   float w;
+  float rho;
   float pt;
   float eta;
   float ptd;
@@ -61,6 +62,7 @@ void createTreeLiteQCD( const std::string& path, const std::string& name ) {
   int   partonId;
 
   tree_lite->Branch("weight"  , &w        , "w/F"        );
+  tree_lite->Branch("rho"     , &rho      , "rho/F"      );
   tree_lite->Branch("pt"      , &pt       , "pt/F"       );
   tree_lite->Branch("eta"     , &eta      , "eta/F"      );
   tree_lite->Branch("ptd"     , &ptd      , "ptd/F"      );
@@ -93,16 +95,17 @@ void createTreeLiteQCD( const std::string& path, const std::string& name ) {
 
     if( myTree.nVert < 1 ) continue;
 
-    if( myTree.nJet30<2 ) continue;
+    //if( myTree.nJet30<2 ) continue;
 
-    if( myTree.nJet30>2 )
-      if( myTree.jet_pt[2]>0.3*0.5*(myTree.jet_pt[0]+myTree.jet_pt[1]) ) continue;
+    //if( myTree.nJet30>2 )
+    //  if( myTree.jet_pt[2]>0.3*0.5*(myTree.jet_pt[0]+myTree.jet_pt[1]) ) continue;
 
+    w = weight;
+    rho = myTree.rho;
 
-    if( fabs(myTree.jet_eta[0])<1.3 && myTree.jet_pt[1]>30. ) { // use pt of other
+    if( fabs(myTree.jet_eta[0])<1.3 && myTree.jet_pt[0]>30. ) { // use pt of other
 
-      w = weight;
-      pt  = myTree.jet_pt[1];
+      pt  = myTree.jet_pt[0];
       eta = myTree.jet_eta[0];
       ptd = myTree.jet_ptd[0];
       axis2 = myTree.jet_axis2[0];
@@ -114,10 +117,9 @@ void createTreeLiteQCD( const std::string& path, const std::string& name ) {
 
     }
 
-    if( fabs(myTree.jet_eta[1])<1.3 && myTree.jet_pt[0]>30. ) { // use pt of other
+    if( fabs(myTree.jet_eta[1])<1.3 && myTree.jet_pt[1]>30. ) { // use pt of other
 
-      w = weight;
-      pt  = myTree.jet_pt[0];
+      pt  = myTree.jet_pt[1];
       eta = myTree.jet_eta[1];
       ptd = myTree.jet_ptd[1];
       axis2 = myTree.jet_axis2[1];

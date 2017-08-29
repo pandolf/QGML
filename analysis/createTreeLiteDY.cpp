@@ -8,12 +8,33 @@
 #include "interface/mt2.h"
 
 
+void createTreeLiteDY( const std::string& path, const std::string& name );
+
 
 int main() {
 
   std::string path = "root://t3dcachedb.psi.ch//pnfs/psi.ch/cms/trivcat/store/user/pandolf/MT2production/80X/PostProcessed/prodAug16_DYandQCD_T2_postProc_Aug21/";
 
-  TFile* file = TFile::Open(Form("%s/DYJetsToLL_M50_LO_post.root", path.c_str()));
+  createTreeLiteDY( path, "DYJetsToLL_M50_HT100to200" );
+  createTreeLiteDY( path, "DYJetsToLL_M50_HT1200to2500" );
+  createTreeLiteDY( path, "DYJetsToLL_M50_HT200to400" );
+  createTreeLiteDY( path, "DYJetsToLL_M50_HT2500toInf" );
+  createTreeLiteDY( path, "DYJetsToLL_M50_HT400to600" );
+  createTreeLiteDY( path, "DYJetsToLL_M50_HT600to800" );
+  createTreeLiteDY( path, "DYJetsToLL_M50_HT800to1200" );
+  createTreeLiteDY( path, "DYJetsToLL_M50_LO" );
+  createTreeLiteDY( path, "DYJetsToLL_M50" );
+
+  return 0;
+
+}
+
+
+void createTreeLiteDY( const std::string& path, const std::string& name ) {
+
+  std::cout << "-> Starting: " << name << std::endl;
+
+  TFile* file = TFile::Open(Form("%s/%s_post.root", path.c_str(), name.c_str()));
   TTree* tree = (TTree*)file->Get("mt2");
 
   MT2Tree myTree;
@@ -21,10 +42,11 @@ int main() {
   myTree.Init(tree);
 
 
-  TFile* outfile = TFile::Open("treeLite_DY.root", "recreate");
+  TFile* outfile = TFile::Open(Form("treeLite_%s.root", name.c_str()), "recreate");
   TTree* tree_lite = new TTree("tlite", "");
 
   float w;
+  float rho;
   float pt;
   float eta;
   float ptd;
@@ -34,6 +56,7 @@ int main() {
   int   partonId;
 
   tree_lite->Branch("weight"  , &w        , "w/F"        );
+  tree_lite->Branch("rho"     , &rho      , "rho/F"      );
   tree_lite->Branch("pt"      , &pt       , "pt/F"       );
   tree_lite->Branch("eta"     , &eta      , "eta/F"      );
   tree_lite->Branch("ptd"     , &ptd      , "ptd/F"      );
@@ -102,8 +125,8 @@ int main() {
     if( myTree.jet_pt[0]<20. ) continue;
 
     w = weight;
-    pt  = z_boson.Pt();
-    //pt  = myTree.jet_pt[0];
+    rho = myTree.rho;
+    pt  = myTree.jet_pt[0];
     eta = myTree.jet_eta[0];
     ptd = myTree.jet_ptd[0];
     axis2 = myTree.jet_axis2[0];
@@ -119,7 +142,5 @@ int main() {
   outfile->cd();
   tree_lite->Write();
   outfile->Close();
-
-  return 0;
 
 }
