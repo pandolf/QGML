@@ -21,8 +21,8 @@ createTreeLiteDY: createTreeLiteDY.cpp
 createTreeLiteQCD: createTreeLiteQCD.cpp 
 	$(CC) -Wall $(INCLUDES) -o createTreeLiteQCD createTreeLiteQCD.cpp $(ROOTFLAG) $(EXTRALIBS)
 
-createPDFs_mixed: createPDFs_mixed.cpp 
-	$(CC) -Wall $(INCLUDES) -o createPDFs_mixed createPDFs_mixed.cpp $(ROOTFLAG) $(EXTRALIBS)
+createPDFs_mixed: createPDFs_mixed.cpp Bins.o
+	$(CC) -Wall $(INCLUDES) -o createPDFs_mixed createPDFs_mixed.cpp Bins.o $(ROOTFLAG) $(EXTRALIBS)
 
 drawPDFmixed: drawPDFmixed.cpp QGMLCommon.o
 	$(CC) -Wall $(INCLUDES) -o drawPDFmixed drawPDFmixed.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
@@ -40,3 +40,6 @@ drawRNNTrainTest: drawRNNTrainTest.cpp QGMLCommon.o
 
 QGMLCommon.o: ../src/QGMLCommon.cc
 	$(CC) -Wall $(INCLUDES) -c ../src/QGMLCommon.cc $(ROOTFLAG) $(EXTRALIBS)
+
+Bins.o: ../../QGLikelihood/src/Bins.cc
+	$(CC) -Wall $(INCLUDES) -c ../../QGLikelihood/src/Bins.cc $(ROOTFLAG) $(EXTRALIBS)
