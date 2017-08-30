@@ -123,20 +123,24 @@ void createPDFs( TTree* tree, const std::string& name ) {
     std::string histoName_axis2(Form("pdf_axis2_pt%d_rho%d", i_pt, i_rho));
     std::string histoName_mult (Form("pdf_mult_pt%d_rho%d" , i_pt, i_rho));
 
+
     for( unsigned i=0; i<pdfs_ptd.size(); ++i ) {
-      if( pdfs_ptd[i]->GetName()==histoName_ptd.c_str() ) {
+      std::string thisName(pdfs_ptd[i]->GetName());
+      if( thisName==histoName_ptd ) {
         pdfs_ptd[i]->Fill( ptd, weight );
         break;
       }
     }
     for( unsigned i=0; i<pdfs_axis2.size(); ++i ) {
-      if( pdfs_axis2[i]->GetName()==histoName_axis2.c_str() ) {
+      std::string thisName(pdfs_axis2[i]->GetName());
+      if( thisName==histoName_axis2 ) {
         pdfs_axis2[i]->Fill( axis2, weight );
         break;
       }
     }
     for( unsigned i=0; i<pdfs_mult.size(); ++i ) {
-      if( pdfs_mult[i]->GetName()==histoName_mult.c_str() ) {
+      std::string thisName(pdfs_mult[i]->GetName());
+      if( thisName==histoName_mult ) {
         pdfs_mult[i]->Fill( mult, weight );
         break;
       }
