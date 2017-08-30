@@ -63,25 +63,32 @@ void createPDFs( TTree* tree, const std::string& name ) {
   TFile* file = TFile::Open(Form("pdfsMixed_%s.root", name.c_str()), "recreate");
   file->cd();
 
-  int nBins_pt=20;
-  double ptBins[nBins_pt+1];
-  Bins::getBins(ptBins, nBins_pt, 20., 2000., true ); 
+  double ptBins[Bins::nPtBins+1];
+  Bins::getPtBins(ptBins);
+  //Bins::getBins(ptBins, nBins_pt, 20., 2000., true ); 
+  std::cout << "-> Using these pt bins:" << std::endl;
+  for( unsigned i=0; i<Bins::nPtBins+1; ++i )
+    std::cout << "  " << ptBins[i] << std::endl;
+  std::cout << std::endl << std::endl;
 
-  int nBins_rho=5;
-  double rhoBins[nBins_rho+1];
-  rhoBins[0] = 0.;
-  rhoBins[1] = 8.;
-  rhoBins[2] = 11.;
-  rhoBins[3] = 14.;
-  rhoBins[4] = 17.;
-  rhoBins[5] = 9999.;
+  double rhoBins[Bins::nRhoBins+1];
+  Bins::getRhoBins(rhoBins);
+  std::cout << "-> Using these rho bins:" << std::endl;
+  for( unsigned i=0; i<Bins::nRhoBins+1; ++i )
+    std::cout << "  " << rhoBins[i] << std::endl;
+  //rhoBins[0] = 0.;
+  //rhoBins[1] = 8.;
+  //rhoBins[2] = 11.;
+  //rhoBins[3] = 14.;
+  //rhoBins[4] = 17.;
+  //rhoBins[5] = 9999.;
 
   
   std::vector<TH1D*> pdfs_ptd, pdfs_axis2, pdfs_mult;
   
-  for( unsigned i_pt=0; i_pt<nBins_pt; ++i_pt ) {
+  for( unsigned i_pt=0; i_pt<Bins::nPtBins; ++i_pt ) {
 
-    for( unsigned i_rho=0; i_rho<nBins_rho; ++i_rho ) {
+    for( unsigned i_rho=0; i_rho<Bins::nRhoBins; ++i_rho ) {
 
       std::string histoName_ptd  (Form("pdf_ptd_pt%d_rho%d"  , i_pt, i_rho));
       std::string histoName_axis2(Form("pdf_axis2_pt%d_rho%d", i_pt, i_rho));
@@ -114,10 +121,10 @@ void createPDFs( TTree* tree, const std::string& name ) {
 
     tree->GetEntry(iEntry);
 
-    int i_pt  = Bins::getBin( nBins_pt ,  ptBins, pt  );
-    int i_rho = Bins::getBin( nBins_rho, rhoBins, rho );
+    int i_pt  = Bins::getBin( Bins::nPtBins ,  ptBins, pt  );
+    int i_rho = Bins::getBin( Bins::nRhoBins, rhoBins, rho );
 
-    if( !(i_pt>=0 && i_pt<=nBins_pt && i_rho>=0 && i_rho<=nBins_rho ) ) continue;
+    if( !(i_pt>=0 && i_pt<=Bins::nPtBins && i_rho>=0 && i_rho<=Bins::nRhoBins ) ) continue;
 
     std::string histoName_ptd  (Form("pdf_ptd_pt%d_rho%d"  , i_pt, i_rho));
     std::string histoName_axis2(Form("pdf_axis2_pt%d_rho%d", i_pt, i_rho));
