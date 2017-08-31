@@ -22,11 +22,14 @@ int main() {
   treeDY->Add("treeLite_DYJetsToLL_M50_HT600to800.root");
 
   TChain* treeQCD = new TChain("tlite");
-  treeQCD->Add("treeLite_QCD_Pt50to80.root");
-  treeQCD->Add("treeLite_QCD_Pt80to120.root");
-  treeQCD->Add("treeLite_QCD_Pt120to170.root");
-  treeQCD->Add("treeLite_QCD_Pt170to300.root");
-  //treeQCD->Add("treeLite_QCD_Pt300to470.root");
+  treeQCD->Add("treeLite_QCD_HT100to200.root");
+  treeQCD->Add("treeLite_QCD_HT200to300.root");
+  treeQCD->Add("treeLite_QCD_HT300to500.root");
+  treeQCD->Add("treeLite_QCD_HT500to700.root");
+  treeQCD->Add("treeLite_QCD_HT700to1000.root");
+  //treeQCD->Add("treeLite_QCD_HT1000to1500.root");
+  //treeQCD->Add("treeLite_QCD_HT1500to2000.root");
+  //treeQCD->Add("treeLite_QCD_HT2000toInf.root");
 
   std::vector<float> ptBins;
   ptBins.push_back(30.);
@@ -86,7 +89,7 @@ void createPDFs( TTree* tree, const std::string& name ) {
   //rhoBins[5] = 9999.;
 
   
-  std::vector<TH1D*> pdfs_ptd, pdfs_axis2, pdfs_mult;
+  std::vector<TH1D*>  pdfs_ptd,  pdfs_axis2,  pdfs_mult;
   std::vector<TH1D*> gluon_ptd, gluon_axis2, gluon_mult;
   std::vector<TH1D*> quark_ptd, quark_axis2, quark_mult;
   std::vector<TH1D*> undef_ptd, undef_axis2, undef_mult;
@@ -174,10 +177,19 @@ void createPDFs( TTree* tree, const std::string& name ) {
 
     tree->GetEntry(iEntry);
 
+    if( pt>2000 ) continue;
     int i_pt  = Bins::getBin( Bins::nPtBins ,  ptBins, pt  );
     int i_rho = Bins::getBin( Bins::nRhoBins, rhoBins, rho );
 
-    if( !(i_pt>=0 && i_pt<=Bins::nPtBins && i_rho>=0 && i_rho<=Bins::nRhoBins ) ) continue;
+
+    if( i_pt <0 ) return;
+    if( i_rho<0 ) return;
+    if( i_pt  >= Bins::nPtBins  ) continue;
+    if( i_rho >= Bins::nRhoBins ) continue;
+
+  
+
+    //if( !(i_pt>=0 && i_pt<=Bins::nPtBins && i_rho>=0 && i_rho<=Bins::nRhoBins ) ) continue;
 
     std::string histoName_ptd  (Form("pdf_ptd_pt%d_rho%d"  , i_pt, i_rho));
     std::string histoName_axis2(Form("pdf_axis2_pt%d_rho%d", i_pt, i_rho));
@@ -267,6 +279,8 @@ void createPDFs( TTree* tree, const std::string& name ) {
 
     } else {
 
+      //fillHisto( undef_ptd, "ptd", i_pt, i_rho );
+
       std::string histoName_undef_ptd  (Form("undef_ptd_pt%d_rho%d"  , i_pt, i_rho));
       std::string histoName_undef_axis2(Form("undef_axis2_pt%d_rho%d", i_pt, i_rho));
       std::string histoName_undef_mult (Form("undef_mult_pt%d_rho%d" , i_pt, i_rho));
@@ -320,3 +334,14 @@ void createPDFs( TTree* tree, const std::string& name ) {
   file->Close();
 
 }
+
+
+
+//void fillHisto( std::vector<TH1D*> pdfs, const std::string& var, int i_pt, int i_rho ) {
+//
+//  if( i_pt <0 ) return;
+//  if( i_rho<0 ) return;
+//  if( i_pt >=pdfs.size() ) i_pt  = pdfs.size()-1;
+//  if( i_rho>=pdfs.size() ) i_rho = pdfs.size()-1;
+
+  
