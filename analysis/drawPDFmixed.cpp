@@ -1,6 +1,8 @@
 #include <iostream>
 
 #include "../interface/QGMLCommon.h"
+#include "QGLikelihood/interface/Bins.h"
+
 
 #include "TCanvas.h"
 #include "TLegend.h"
@@ -13,8 +15,8 @@
 
 
 
-void drawVar( const std::string& outdir, TTree* tree, const std::string& var, const std::string& sel, int nBins, float xMin, float xMax, const std::string& axisName, int legendQuadrant );
 
+void drawPDFs( const std::string& outdir, const std::string& var, const std::string& axisName, TFile* fileDY, TFile* fileQCD, int nBinsPt, double* ptBins, int nBinsRho, double* rhoBins );
 
 
 
@@ -22,65 +24,29 @@ int main( int argc, char* argv[] ) {
  
   QGMLCommon::setStyle();
 
-  std::string datasetType = "DY";
 
-  if( argc>1 ) {
+  TFile* fileDY  = TFile::Open( "pdfsMixed_dy.root"  );
+  TFile* fileQCD = TFile::Open( "pdfsMixed_qcd.root" );
 
-    datasetType = std::string(argv[1]);
+  double ptBins[Bins::nPtBins+1];
+  Bins::getPtBins(ptBins);
+  //std::cout << "-> Using these pt bins:" << std::endl;
+  //for( unsigned i=0; i<Bins::nPtBins+1; ++i )
+  //  std::cout << "  " << ptBins[i] << std::endl;
+  //std::cout << std::endl << std::endl;
 
-    if( datasetType!="DY" && datasetType!="QCD" ) {
-      std::cout << "-> Only 'QCD' and 'DY' are accepted arguments." << std::endl;
-      exit(1);
-    }
+  double rhoBins[Bins::nRhoBins+1];
+  Bins::getRhoBins(rhoBins);
+  //std::cout << "-> Using these rho bins:" << std::endl;
+  //for( unsigned i=0; i<Bins::nRhoBins+1; ++i )
+  //  std::cout << "  " << rhoBins[i] << std::endl;
+  //std::cout << std::endl << std::endl;
 
-  }
-
-  std::cout << " -> Dataset: " << datasetType << std::endl;
-
-  std::string outdir( Form("plots%s", datasetType.c_str()) );
+  std::string outdir("pdfPlots");
   system( Form("mkdir -p %s", outdir.c_str()) );
 
-  TH1D::AddDirectory(1);
+  drawPDFs( outdir, "ptd", "p_{T,D}", fileDY, fileQCD, Bins::nPtBins+1, ptBins, Bins::nRhoBins+1, rhoBins );
 
-  TChain* tree = new TChain("tlite");
-
-  if( datasetType=="DY" ) {
-    tree->Add("treeLite_DYJetsToLL_M50_HT100to200.root");
-    tree->Add("treeLite_DYJetsToLL_M50_HT200to400.root");
-    tree->Add("treeLite_DYJetsToLL_M50_HT400to600.root");
-    tree->Add("treeLite_DYJetsToLL_M50_HT600to800.root");
-    tree->Add("treeLite_DYJetsToLL_M50_HT800to1200.root");
-    tree->Add("treeLite_DYJetsToLL_M50_HT1200to2500.root");
-    tree->Add("treeLite_DYJetsToLL_M50_HT2500toInf.root");
-  } else if( datasetType=="QCD" ) {
-    //tree->Add("treeLite_QCD_Pt15to30.root");
-    //tree->Add("treeLite_QCD_Pt30to50.root");
-    //tree->Add("treeLite_QCD_Pt50to80.root");
-    //tree->Add("treeLite_QCD_Pt80to120.root");
-    //tree->Add("treeLite_QCD_Pt120to170.root");
-    //tree->Add("treeLite_QCD_Pt170to300.root");
-    //tree->Add("treeLite_QCD_Pt300to470.root");
-    //tree->Add("treeLite_QCD_Pt470to600.root");
-    //tree->Add("treeLite_QCD_Pt600to800.root");
-    //tree->Add("treeLite_QCD_Pt800to1000.root");
-    //tree->Add("treeLite_QCD_Pt1000to1400.root");
-    //tree->Add("treeLite_QCD_Pt1400to1800.root");
-    //tree->Add("treeLite_QCD_Pt1800to2400.root");
-    //tree->Add("treeLite_QCD_Pt2400to3200.root");
-    //tree->Add("treeLite_QCD_Pt3200.root");
-    tree->Add("treeLite_QCD_HT100to200.root");
-    tree->Add("treeLite_QCD_HT200to300.root");
-    tree->Add("treeLite_QCD_HT300to500.root");
-    tree->Add("treeLite_QCD_HT500to700.root");
-    tree->Add("treeLite_QCD_HT700to1000.root");
-    //tree->Add("treeLite_QCD_HT1000to1500.root");
-    //tree->Add("treeLite_QCD_HT1500to2000.root");
-    //tree->Add("treeLite_QCD_HT2000toInf.root");
-  }
-  
-  drawVar( outdir, tree, "pt" , ""                  , 50, 100.,   200., "p_{T} [GeV]", 2 );
-  drawVar( outdir, tree, "eta", "pt>120. && pt<200.", 50,  -2.,     2., "#eta"       , 0 );
-  drawVar( outdir, tree, "qgl", "pt>120. && pt<200.", 50,   0., 1.0001, "QG LD"      , 0 );
 
 
 
@@ -88,113 +54,107 @@ int main( int argc, char* argv[] ) {
 }
 
 
-void drawVar( const std::string& outdir, TTree* tree, const std::string& var, const std::string& sel, int nBins, float xMin, float xMax, const std::string& axisName, int legendQuadrant ) {
+void drawPDFs( const std::string& outdir, const std::string& var, const std::string& axisName, TFile* fileDY, TFile* fileQCD, int nBinsPt, double* ptBins, int nBinsRho, double* rhoBins ) {
 
-  std::string hname_q( Form("h1_q_%s", var.c_str()) );
-  std::string hname_g( Form("h1_g_%s", var.c_str()) );
-  std::string hname_u( Form("h1_u_%s", var.c_str()) );
+  for( unsigned i_pt=0; i_pt<nBinsPt; ++i_pt ) {
 
-  TH1D* h1_q = new TH1D( hname_q.c_str(), "", nBins, xMin, xMax );
-  h1_q->Sumw2();
-  TH1D* h1_g = new TH1D( hname_g.c_str(), "", nBins, xMin, xMax );
-  h1_g->Sumw2();
-  TH1D* h1_u = new TH1D( hname_u.c_str(), "", nBins, xMin, xMax );
-  h1_u->Sumw2();
+    for( unsigned i_rho=0; i_rho<nBinsRho; ++i_rho ) {
 
-  if( sel!="" ) {
-    tree->Project( hname_q.c_str(), var.c_str(), Form("w*(abs(partonId)<5 && abs(partonId)>0 && %s)", sel.c_str()) );
-    tree->Project( hname_g.c_str(), var.c_str(), Form("w*(partonId==21                       && %s)", sel.c_str()) );
-    tree->Project( hname_u.c_str(), var.c_str(), Form("w*(partonId==0                        && %s)", sel.c_str()) );
-  } else {
-    tree->Project( hname_q.c_str(), var.c_str(), Form("w*(abs(partonId)<5 && abs(partonId)>0)") );
-    tree->Project( hname_g.c_str(), var.c_str(), Form("w*(partonId==21                      )") );
-    tree->Project( hname_u.c_str(), var.c_str(), Form("w*(partonId==0                       )") );
-  }
+      float ptMin  =  ptBins [i_pt   ];
+      float ptMax  =  ptBins [i_pt+1 ];
+      float rhoMin =  rhoBins[i_rho  ];
+      float rhoMax =  rhoBins[i_rho+1];
 
-  //float hint_q = h1_q->Integral("");
-  //float hint_g = h1_g->Integral("");
-  //float hint_u = h1_u->Integral("");
-  //
-  //h1_q->Scale(1./hint_q);
-  //h1_g->Scale(1./hint_g);
-  //h1_u->Scale(1./hint_u);
-  
-  float yMax = 0.;
+      std::string histoName_pdf  (Form(  "pdf_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_quark(Form("quark_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_gluon(Form("gluon_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_undef(Form("undef_ptd_pt%d_rho%d"  , i_pt, i_rho));
 
-  for( unsigned i=0; i<nBins; i++ ) {
+      TH1D* h1_pdf_dy    = (TH1D*)fileDY ->Get(histoName_pdf  .c_str());
+      TH1D* h1_quark_dy  = (TH1D*)fileDY ->Get(histoName_quark.c_str());
+      TH1D* h1_gluon_dy  = (TH1D*)fileDY ->Get(histoName_gluon.c_str());
+      TH1D* h1_undef_dy  = (TH1D*)fileDY ->Get(histoName_undef.c_str());
 
-  //h1_q->SetBinContent( i+1, h1_q->GetBinContent(i+1)/hint_q );
-  //h1_g->SetBinContent( i+1, h1_g->GetBinContent(i+1)/hint_g );
-  //h1_u->SetBinContent( i+1, h1_u->GetBinContent(i+1)/hint_u );
-  //h1_q->SetBinError( i+1, 0. );
-  //h1_g->SetBinError( i+1, 0. );
-  //h1_u->SetBinError( i+1, 0. );
+      TH1D* h1_pdf_qcd   = (TH1D*)fileQCD->Get(histoName_pdf  .c_str());
+      TH1D* h1_quark_qcd = (TH1D*)fileQCD->Get(histoName_quark.c_str());
+      TH1D* h1_gluon_qcd = (TH1D*)fileQCD->Get(histoName_gluon.c_str());
+      TH1D* h1_undef_qcd = (TH1D*)fileQCD->Get(histoName_undef.c_str());
 
-    if( h1_q->GetBinContent(i+1)+h1_g->GetBinContent(i+1)+h1_u->GetBinContent(i+1) > yMax )
-      yMax = h1_q->GetBinContent(i+1)+h1_g->GetBinContent(i+1)+h1_u->GetBinContent(i+1);
-
-  }
-
-  h1_q->SetFillColor( 38 );
-  h1_g->SetFillColor( 46 );
-  h1_u->SetFillColor( kGray );
-
-  THStack* stack = new THStack();
-  stack->Add( h1_u );
-  stack->Add( h1_g );
-  stack->Add( h1_q );
-
-  TH2D* h2_axes = new TH2D( "axes", "", 10, xMin, xMax, 10, 0., 1.35*yMax );
-  h2_axes->SetXTitle( axisName.c_str() );
-  h2_axes->SetYTitle( "Arbitrary Units" );
+      if( h1_pdf_qcd->GetEntries()==0 ) continue;
+      if( h1_pdf_dy ->GetEntries()==0 ) continue;
 
 
-  TCanvas* c1 = new TCanvas("c1", "", 600, 600 );
-  c1->cd();
+      TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+      c1->cd();
 
-  h2_axes->Draw();
+      float q_dy = h1_quark_dy->Integral();
+      float g_dy = h1_gluon_dy->Integral();
+      float u_dy = h1_undef_dy->Integral();
+
+      float qfrac_dy = q_dy / ( q_dy+g_dy+u_dy );
+      float gfrac_dy = g_dy / ( q_dy+g_dy+u_dy );
+      float ufrac_dy = u_dy / ( q_dy+g_dy+u_dy );
+
+      float q_qcd = h1_quark_qcd->Integral();
+      float g_qcd = h1_gluon_qcd->Integral();
+      float u_qcd = h1_undef_qcd->Integral();
+
+      float qfrac_qcd = q_qcd / ( q_qcd+g_qcd+u_qcd );
+      float gfrac_qcd = g_qcd / ( q_qcd+g_qcd+u_qcd );
+      float ufrac_qcd = u_qcd / ( q_qcd+g_qcd+u_qcd );
+
+      float xMin = h1_pdf_dy->GetXaxis()->GetXmin();
+      float xMax = h1_pdf_dy->GetXaxis()->GetXmax();
+      float yMax_dy  = h1_pdf_dy ->GetMaximum()/h1_pdf_dy ->Integral();
+      float yMax_qcd = h1_pdf_qcd->GetMaximum()/h1_pdf_qcd->Integral();
+      float yMax = (yMax_dy>yMax_qcd) ? yMax_dy : yMax_qcd;
+
+      h1_pdf_dy ->SetLineColor(38);
+      h1_pdf_qcd->SetLineColor(46);
+
+      h1_pdf_dy ->SetFillColor(38);
+      h1_pdf_qcd->SetFillColor(46);
+
+      h1_pdf_dy ->SetLineWidth(2);
+      h1_pdf_qcd->SetLineWidth(2);
+
+      h1_pdf_dy ->SetFillStyle(3004);
+      h1_pdf_qcd->SetFillStyle(3005);
 
 
-  float xMin_leg, xMax_leg, yMin_leg, yMax_leg;
+      TH2D* h2_axes = new TH2D( "axes", "", 10, xMin, xMax, 10, 0., yMax*1.6 );
+      h2_axes->SetXTitle( axisName.c_str() );
+      h2_axes->SetYTitle( "Normalized to Unity" );
+      h2_axes->Draw();
 
-  if( legendQuadrant==2 ) {
-    xMin_leg = 0.65;
-    xMax_leg = 0.9;
-    yMin_leg = 0.7;
-    yMax_leg = 0.9;
-  } else if( legendQuadrant==0 ) {
-    xMin_leg = 0.38;
-    xMax_leg = 0.62;
-    yMin_leg = 0.7;
-    yMax_leg = 0.9;
-  }
-  
-  TLegend* legend = new TLegend( xMin_leg, yMin_leg, xMax_leg, yMax_leg );
-  legend->SetTextSize ( 0.038 );
-  legend->SetFillColor( 0 );
-  legend->AddEntry( h1_q, "Quarks", "F" );
-  legend->AddEntry( h1_g, "Gluons", "F" );
-  legend->AddEntry( h1_u, "Undefined", "F" );
-  legend->Draw("same");
+      TLegend* legend = new TLegend( 0.25, 0.7, 0.6, 0.9 );
+      legend->SetFillColor(0);
+      legend->SetTextSize(0.035);
+      legend->SetHeader(Form("%.0f < p_{T} < %.0f GeV, |#eta|<1.3, %.0f < #rho < %.0f GeV", ptMin, ptMax, rhoMin, rhoMax));
+      legend->AddEntry( h1_pdf_dy , Form("DY (%.1fq/%.1fg/%.1fu)" , 100.*qfrac_dy, 100.*gfrac_dy, 100.*ufrac_dy), "F" );
+      legend->AddEntry( h1_pdf_qcd, Form("QCD (%.1fq/%.1fg/%.1fu)" , 100.*qfrac_qcd, 100.*gfrac_qcd, 100.*ufrac_qcd), "F" );
+      legend->Draw("same");
 
-  stack->Draw("histo same");
+      h1_pdf_dy ->DrawNormalized("same"); 
+      h1_pdf_qcd->DrawNormalized("same"); 
 
-  TPaveText* labelTop = QGMLCommon::get_labelTop();
-  TPaveText* labelCMS = QGMLCommon::get_labelCMS();
+      TPaveText* labelTop = QGMLCommon::get_labelTop();
+      TPaveText* labelCMS = QGMLCommon::get_labelCMS();
 
-  labelTop->Draw("same");
-  labelCMS->Draw("same");
+      labelTop->Draw("same");
+      labelCMS->Draw("same");
 
-  gPad->RedrawAxis();
+      gPad->RedrawAxis();
 
-  c1->SaveAs( Form("%s/%s.eps", outdir.c_str(), var.c_str()) );
-  c1->SaveAs( Form("%s/%s.pdf", outdir.c_str(), var.c_str()) );
+      c1->SaveAs( Form("%s/pdfs_pt%d_rho%d.eps", outdir.c_str(), i_pt, i_rho) );
+      c1->SaveAs( Form("%s/pdfs_pt%d_rho%d.pdf", outdir.c_str(), i_pt, i_rho) );
 
-  delete c1;
-  delete h2_axes;
-  delete h1_q;
-  delete h1_g;
-  delete h1_u;
-  delete stack;
+      delete c1;
+      delete h2_axes;
+
+    } // i pt
+ 
+  } // i rho
 
 }
+
