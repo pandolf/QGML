@@ -119,7 +119,7 @@ void createTreeLiteDY( const std::string& path, const std::string& name ) {
 
     
     if( myTree.nJet30>1 )
-      if( myTree.jet_pt[1]>0.3*z_boson.Pt() ) continue;
+      if( myTree.jet_pt[1]>0.30*z_boson.Pt() ) continue;
 
     if( fabs(myTree.jet_eta[0])>1.3 ) continue;
     if( myTree.jet_pt[0]<20. ) continue;
