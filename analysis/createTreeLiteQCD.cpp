@@ -42,6 +42,7 @@ int main( int argc, char* argv[] ) {
     createTreeLiteQCD( path, "QCD_Pt3200" );
   } else if( type=="qcdht" ) {
     createTreeLiteQCD( path, "QCD_HT100to200" );
+    createTreeLiteQCD( path, "QCD_HT200to300" );
     createTreeLiteQCD( path, "QCD_HT300to500" );
     createTreeLiteQCD( path, "QCD_HT500to700" );
     createTreeLiteQCD( path, "QCD_HT700to1000" );
