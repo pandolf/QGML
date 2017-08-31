@@ -24,8 +24,11 @@ createTreeLiteQCD: createTreeLiteQCD.cpp
 createPDFs_mixed: createPDFs_mixed.cpp Bins.o
 	$(CC) -Wall $(INCLUDES) -o createPDFs_mixed createPDFs_mixed.cpp Bins.o $(ROOTFLAG) $(EXTRALIBS)
 
-drawPDFmixed: drawPDFmixed.cpp QGMLCommon.o
-	$(CC) -Wall $(INCLUDES) -o drawPDFmixed drawPDFmixed.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
+drawPDFmixed: drawPDFmixed.cpp QGMLCommon.o Bins.o
+	$(CC) -Wall $(INCLUDES) -o drawPDFmixed drawPDFmixed.cpp QGMLCommon.o Bins.o $(ROOTFLAG) $(EXTRALIBS)
+
+drawTreeLite: drawTreeLite.cpp QGMLCommon.o
+	$(CC) -Wall $(INCLUDES) -o drawTreeLite drawTreeLite.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
 
 createTreeLite: createTreeLite.cpp QGMLCommon.o
 	$(CC) -Wall $(INCLUDES) -o createTreeLite createTreeLite.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
