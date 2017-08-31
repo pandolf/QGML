@@ -50,14 +50,16 @@ void createPDFs( TTree* tree, const std::string& name ) {
   float ptd;
   float axis2;
   int mult;
+  int partonId;
 
-  tree->SetBranchAddress( "weight", &weight );
-  tree->SetBranchAddress( "rho"   , &rho    );
-  tree->SetBranchAddress( "pt"    , &pt     );
-  tree->SetBranchAddress( "eta"   , &eta    );
-  tree->SetBranchAddress( "ptd"   , &ptd    );
-  tree->SetBranchAddress( "axis2" , &axis2  );
-  tree->SetBranchAddress( "mult"  , &mult   );
+  tree->SetBranchAddress( "weight"    , &weight     );
+  tree->SetBranchAddress( "rho"       , &rho        );
+  tree->SetBranchAddress( "pt"        , &pt         );
+  tree->SetBranchAddress( "eta"       , &eta        );
+  tree->SetBranchAddress( "ptd"       , &ptd        );
+  tree->SetBranchAddress( "axis2"     , &axis2      );
+  tree->SetBranchAddress( "mult"      , &mult       );
+  tree->SetBranchAddress( "partonId"  , &partonId   );
 
 
   TFile* file = TFile::Open(Form("pdfsMixed_%s.root", name.c_str()), "recreate");
@@ -85,6 +87,9 @@ void createPDFs( TTree* tree, const std::string& name ) {
 
   
   std::vector<TH1D*> pdfs_ptd, pdfs_axis2, pdfs_mult;
+  std::vector<TH1D*> gluon_ptd, gluon_axis2, gluon_mult;
+  std::vector<TH1D*> quark_ptd, quark_axis2, quark_mult;
+  std::vector<TH1D*> undef_ptd, undef_axis2, undef_mult;
   
   for( unsigned i_pt=0; i_pt<Bins::nPtBins; ++i_pt ) {
 
@@ -105,6 +110,54 @@ void createPDFs( TTree* tree, const std::string& name ) {
       pdfs_ptd   .push_back(newhist_ptd  );
       pdfs_axis2 .push_back(newhist_axis2);
       pdfs_mult  .push_back(newhist_mult );
+
+      std::string histoName_gluon_ptd  (Form("gluon_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_gluon_axis2(Form("gluon_axis2_pt%d_rho%d", i_pt, i_rho));
+      std::string histoName_gluon_mult (Form("gluon_mult_pt%d_rho%d" , i_pt, i_rho));
+
+      TH1D* newhist_gluon_ptd   = new TH1D( histoName_gluon_ptd.c_str()  , "", 100, 0., 1.0001 );
+      TH1D* newhist_gluon_axis2 = new TH1D( histoName_gluon_axis2.c_str(), "", 100, 0., 8.     );
+      TH1D* newhist_gluon_mult  = new TH1D( histoName_gluon_mult.c_str() , "", 140, 2.5, 142.5 );
+
+      newhist_gluon_ptd   ->Sumw2();
+      newhist_gluon_axis2 ->Sumw2();
+      newhist_gluon_mult  ->Sumw2();
+
+      gluon_ptd   .push_back(newhist_gluon_ptd  );
+      gluon_axis2 .push_back(newhist_gluon_axis2);
+      gluon_mult  .push_back(newhist_gluon_mult );
+
+      std::string histoName_quark_ptd  (Form("quark_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_quark_axis2(Form("quark_axis2_pt%d_rho%d", i_pt, i_rho));
+      std::string histoName_quark_mult (Form("quark_mult_pt%d_rho%d" , i_pt, i_rho));
+
+      TH1D* newhist_quark_ptd   = new TH1D( histoName_quark_ptd.c_str()  , "", 100, 0., 1.0001 );
+      TH1D* newhist_quark_axis2 = new TH1D( histoName_quark_axis2.c_str(), "", 100, 0., 8.     );
+      TH1D* newhist_quark_mult  = new TH1D( histoName_quark_mult.c_str() , "", 140, 2.5, 142.5 );
+
+      newhist_quark_ptd   ->Sumw2();
+      newhist_quark_axis2 ->Sumw2();
+      newhist_quark_mult  ->Sumw2();
+
+      quark_ptd   .push_back(newhist_quark_ptd  );
+      quark_axis2 .push_back(newhist_quark_axis2);
+      quark_mult  .push_back(newhist_quark_mult );
+
+      std::string histoName_undef_ptd  (Form("undef_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_undef_axis2(Form("undef_axis2_pt%d_rho%d", i_pt, i_rho));
+      std::string histoName_undef_mult (Form("undef_mult_pt%d_rho%d" , i_pt, i_rho));
+
+      TH1D* newhist_undef_ptd   = new TH1D( histoName_undef_ptd.c_str()  , "", 100, 0., 1.0001 );
+      TH1D* newhist_undef_axis2 = new TH1D( histoName_undef_axis2.c_str(), "", 100, 0., 8.     );
+      TH1D* newhist_undef_mult  = new TH1D( histoName_undef_mult.c_str() , "", 140, 2.5, 142.5 );
+
+      newhist_undef_ptd   ->Sumw2();
+      newhist_undef_axis2 ->Sumw2();
+      newhist_undef_mult  ->Sumw2();
+
+      undef_ptd   .push_back(newhist_undef_ptd  );
+      undef_axis2 .push_back(newhist_undef_axis2);
+      undef_mult  .push_back(newhist_undef_mult );
 
     }
 
@@ -153,6 +206,96 @@ void createPDFs( TTree* tree, const std::string& name ) {
       }
     }
 
+
+    if( partonId==21 ) {
+
+      std::string histoName_gluon_ptd  (Form("gluon_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_gluon_axis2(Form("gluon_axis2_pt%d_rho%d", i_pt, i_rho));
+      std::string histoName_gluon_mult (Form("gluon_mult_pt%d_rho%d" , i_pt, i_rho));
+
+
+      for( unsigned i=0; i<gluon_ptd.size(); ++i ) {
+        std::string thisName(gluon_ptd[i]->GetName());
+        if( thisName==histoName_gluon_ptd ) {
+          gluon_ptd[i]->Fill( ptd, weight );
+          break;
+        }
+      }
+      for( unsigned i=0; i<gluon_axis2.size(); ++i ) {
+        std::string thisName(gluon_axis2[i]->GetName());
+        if( thisName==histoName_gluon_axis2 ) {
+          gluon_axis2[i]->Fill( axis2, weight );
+          break;
+        }
+      }
+      for( unsigned i=0; i<gluon_mult.size(); ++i ) {
+        std::string thisName(gluon_mult[i]->GetName());
+        if( thisName==histoName_gluon_mult ) {
+          gluon_mult[i]->Fill( mult, weight );
+          break;
+        }
+      }
+
+    } else if( abs(partonId)>0 && abs(partonId)<6  ) {
+
+      std::string histoName_quark_ptd  (Form("quark_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_quark_axis2(Form("quark_axis2_pt%d_rho%d", i_pt, i_rho));
+      std::string histoName_quark_mult (Form("quark_mult_pt%d_rho%d" , i_pt, i_rho));
+
+
+      for( unsigned i=0; i<quark_ptd.size(); ++i ) {
+        std::string thisName(quark_ptd[i]->GetName());
+        if( thisName==histoName_quark_ptd ) {
+          quark_ptd[i]->Fill( ptd, weight );
+          break;
+        }
+      }
+      for( unsigned i=0; i<quark_axis2.size(); ++i ) {
+        std::string thisName(quark_axis2[i]->GetName());
+        if( thisName==histoName_quark_axis2 ) {
+          quark_axis2[i]->Fill( axis2, weight );
+          break;
+        }
+      }
+      for( unsigned i=0; i<quark_mult.size(); ++i ) {
+        std::string thisName(quark_mult[i]->GetName());
+        if( thisName==histoName_quark_mult ) {
+          quark_mult[i]->Fill( mult, weight );
+          break;
+        }
+      }
+
+    } else {
+
+      std::string histoName_undef_ptd  (Form("undef_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_undef_axis2(Form("undef_axis2_pt%d_rho%d", i_pt, i_rho));
+      std::string histoName_undef_mult (Form("undef_mult_pt%d_rho%d" , i_pt, i_rho));
+
+
+      for( unsigned i=0; i<undef_ptd.size(); ++i ) {
+        std::string thisName(undef_ptd[i]->GetName());
+        if( thisName==histoName_undef_ptd ) {
+          undef_ptd[i]->Fill( ptd, weight );
+          break;
+        }
+      }
+      for( unsigned i=0; i<undef_axis2.size(); ++i ) {
+        std::string thisName(undef_axis2[i]->GetName());
+        if( thisName==histoName_undef_axis2 ) {
+          undef_axis2[i]->Fill( axis2, weight );
+          break;
+        }
+      }
+      for( unsigned i=0; i<undef_mult.size(); ++i ) {
+        std::string thisName(undef_mult[i]->GetName());
+        if( thisName==histoName_undef_mult ) {
+          undef_mult[i]->Fill( mult, weight );
+          break;
+        }
+      }
+
+    }
+
   }
 
   file->cd();
@@ -160,6 +303,18 @@ void createPDFs( TTree* tree, const std::string& name ) {
   for( unsigned i=0; i<pdfs_ptd  .size(); ++i ) pdfs_ptd  [i]->Write();
   for( unsigned i=0; i<pdfs_axis2.size(); ++i ) pdfs_axis2[i]->Write();
   for( unsigned i=0; i<pdfs_mult .size(); ++i ) pdfs_mult [i]->Write();
+    
+  for( unsigned i=0; i<gluon_ptd  .size(); ++i ) gluon_ptd  [i]->Write();
+  for( unsigned i=0; i<gluon_axis2.size(); ++i ) gluon_axis2[i]->Write();
+  for( unsigned i=0; i<gluon_mult .size(); ++i ) gluon_mult [i]->Write();
+    
+  for( unsigned i=0; i<quark_ptd  .size(); ++i ) quark_ptd  [i]->Write();
+  for( unsigned i=0; i<quark_axis2.size(); ++i ) quark_axis2[i]->Write();
+  for( unsigned i=0; i<quark_mult .size(); ++i ) quark_mult [i]->Write();
+    
+  for( unsigned i=0; i<undef_ptd  .size(); ++i ) undef_ptd  [i]->Write();
+  for( unsigned i=0; i<undef_axis2.size(); ++i ) undef_axis2[i]->Write();
+  for( unsigned i=0; i<undef_mult .size(); ++i ) undef_mult [i]->Write();
     
 
   file->Close();
