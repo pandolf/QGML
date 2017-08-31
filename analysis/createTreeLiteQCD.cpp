@@ -8,28 +8,47 @@
 #include "interface/mt2.h"
 
 
+
+std::string type="qcdpt";
+
 void createTreeLiteQCD( const std::string& path, const std::string& name );
 
 
-int main() {
+int main( int argc, char* argv[] ) {
+
+
+  if( argc>1 ) {
+    std::string typetype(argv[1]);
+    type = typetype;
+  }
 
   std::string path = "root://t3dcachedb.psi.ch//pnfs/psi.ch/cms/trivcat/store/user/pandolf/MT2production/80X/PostProcessed/prodAug16_DYandQCD_T2_postProc_Aug21/";
 
-  createTreeLiteQCD( path, "QCD_Pt15to30" );
-  createTreeLiteQCD( path, "QCD_Pt30to50" );
-  createTreeLiteQCD( path, "QCD_Pt50to80" );
-  createTreeLiteQCD( path, "QCD_Pt80to120" );
-  createTreeLiteQCD( path, "QCD_Pt120to170" );
-  createTreeLiteQCD( path, "QCD_Pt170to300" );
-  createTreeLiteQCD( path, "QCD_Pt300to470" );
-  createTreeLiteQCD( path, "QCD_Pt470to600" );
-  createTreeLiteQCD( path, "QCD_Pt600to800" );
-  createTreeLiteQCD( path, "QCD_Pt800to1000" );
-  createTreeLiteQCD( path, "QCD_Pt1000to1400" );
-  createTreeLiteQCD( path, "QCD_Pt1400to1800" );
-  createTreeLiteQCD( path, "QCD_Pt1800to2400" );
-  createTreeLiteQCD( path, "QCD_Pt2400to3200" );
-  createTreeLiteQCD( path, "QCD_Pt3200" );
+  if( type=="qcdpt" ) {
+    createTreeLiteQCD( path, "QCD_Pt15to30" );
+    createTreeLiteQCD( path, "QCD_Pt30to50" );
+    createTreeLiteQCD( path, "QCD_Pt50to80" );
+    createTreeLiteQCD( path, "QCD_Pt80to120" );
+    createTreeLiteQCD( path, "QCD_Pt120to170" );
+    createTreeLiteQCD( path, "QCD_Pt170to300" );
+    createTreeLiteQCD( path, "QCD_Pt300to470" );
+    createTreeLiteQCD( path, "QCD_Pt470to600" );
+    createTreeLiteQCD( path, "QCD_Pt600to800" );
+    createTreeLiteQCD( path, "QCD_Pt800to1000" );
+    createTreeLiteQCD( path, "QCD_Pt1000to1400" );
+    createTreeLiteQCD( path, "QCD_Pt1400to1800" );
+    createTreeLiteQCD( path, "QCD_Pt1800to2400" );
+    createTreeLiteQCD( path, "QCD_Pt2400to3200" );
+    createTreeLiteQCD( path, "QCD_Pt3200" );
+  } else if( type=="qcdht" ) {
+    createTreeLiteQCD( path, "QCD_HT100to200" );
+    createTreeLiteQCD( path, "QCD_HT300to500" );
+    createTreeLiteQCD( path, "QCD_HT500to700" );
+    createTreeLiteQCD( path, "QCD_HT700to1000" );
+    createTreeLiteQCD( path, "QCD_HT1000to1500" );
+    createTreeLiteQCD( path, "QCD_HT1500to2000" );
+    createTreeLiteQCD( path, "QCD_HT2000toInf" );
+  }
 
   return 0;
 
@@ -75,6 +94,7 @@ void createTreeLiteQCD( const std::string& path, const std::string& name ) {
 
   int nentries = tree->GetEntries();
 
+  if( type=="qcdht" ) nentries = 1000000;
 
   for( unsigned iEntry=0; iEntry<nentries; iEntry++ ) {
 
@@ -87,7 +107,7 @@ void createTreeLiteQCD( const std::string& path, const std::string& name ) {
     if( myTree.isData && !myTree.passFilters() ) continue;
     if( myTree.isData &&  myTree.isGolden == 0 ) continue;
 
-    if( !myTree.isData && !myTree.passFiltersMC() ) continue;
+    //if( !myTree.isData && !myTree.passFiltersMC() ) continue;
 
     //if( myTree.nJet200MuFrac50DphiMet > 0 ) continue; // new RA2 filter
     //if (myTree.met_miniaodPt/myTree.met_caloPt>5.0  &&  myTree.met_miniaodPt>200.) continue;
@@ -95,10 +115,10 @@ void createTreeLiteQCD( const std::string& path, const std::string& name ) {
 
     if( myTree.nVert < 1 ) continue;
 
-    //if( myTree.nJet30<2 ) continue;
+    if( myTree.nJet30<2 ) continue;
 
-    //if( myTree.nJet30>2 )
-    //  if( myTree.jet_pt[2]>0.3*0.5*(myTree.jet_pt[0]+myTree.jet_pt[1]) ) continue;
+    if( myTree.nJet30>2 )
+      if( myTree.jet_pt[2]>0.30*0.5*(myTree.jet_pt[0]+myTree.jet_pt[1]) ) continue;
 
     w = weight;
     rho = myTree.rho;
