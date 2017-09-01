@@ -45,11 +45,9 @@ int main( int argc, char* argv[] ) {
   std::string outdir("pdfPlots");
   system( Form("mkdir -p %s", outdir.c_str()) );
 
-  drawPDFs( outdir, "ptd", "p_{T,D}", fileDY, fileQCD, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
-
-
-
-
+  drawPDFs( outdir, "ptd"  , "p_{T,D}"       , fileDY, fileQCD, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
+  drawPDFs( outdir, "axis2", "-log(#sigma_{2})", fileDY, fileQCD, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
+  drawPDFs( outdir, "mult" , "Multiplicity"  , fileDY, fileQCD, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
 
 }
 
@@ -67,10 +65,10 @@ void drawPDFs( const std::string& outdir, const std::string& var, const std::str
       float rhoMin =  rhoBins[i_rho  ];
       float rhoMax =  rhoBins[i_rho+1];
 
-      std::string histoName_pdf  (Form(  "pdf_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_quark(Form("quark_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_gluon(Form("gluon_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_undef(Form("undef_ptd_pt%d_rho%d"  , i_pt, i_rho));
+      std::string histoName_pdf  (Form(  "pdf_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_quark(Form("quark_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_gluon(Form("gluon_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_undef(Form("undef_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
 
       TH1D* h1_pdf_dy    = (TH1D*)fileDY ->Get(histoName_pdf  .c_str());
       TH1D* h1_quark_dy  = (TH1D*)fileDY ->Get(histoName_quark.c_str());
@@ -108,6 +106,7 @@ void drawPDFs( const std::string& outdir, const std::string& var, const std::str
 
       float xMin = h1_pdf_dy->GetXaxis()->GetXmin();
       float xMax = h1_pdf_dy->GetXaxis()->GetXmax();
+      if( var=="mult" ) xMax = 35.;
       float yMax_dy  = h1_pdf_dy ->GetMaximum()/h1_pdf_dy ->Integral();
       float yMax_qcd = h1_pdf_qcd->GetMaximum()/h1_pdf_qcd->Integral();
       float yMax = (yMax_dy>yMax_qcd) ? yMax_dy : yMax_qcd;
@@ -149,8 +148,8 @@ void drawPDFs( const std::string& outdir, const std::string& var, const std::str
 
       gPad->RedrawAxis();
 
-      c1->SaveAs( Form("%s/pdfs_pt%d_rho%d.eps", outdir.c_str(), i_pt, i_rho) );
-      c1->SaveAs( Form("%s/pdfs_pt%d_rho%d.pdf", outdir.c_str(), i_pt, i_rho) );
+      c1->SaveAs( Form("%s/pdfs_%s_pt%d_rho%d.eps", outdir.c_str(), var.c_str(), i_pt, i_rho) );
+      c1->SaveAs( Form("%s/pdfs_%s_pt%d_rho%d.pdf", outdir.c_str(), var.c_str(), i_pt, i_rho) );
 
       delete c1;
       delete h2_axes;
