@@ -16,7 +16,7 @@
 
 
 
-void drawPDFs( const std::string& outdir, const std::string& var, const std::string& axisName, TFile* fileDY, TFile* fileQCD, int nBinsPt, double* ptBins, int nBinsRho, double* rhoBins );
+void drawPDFs( const std::string& outdir, const std::string& var, const std::string& axisName, TFile* file, int nBinsPt, double* ptBins, int nBinsRho, double* rhoBins );
 
 
 
@@ -25,8 +25,7 @@ int main( int argc, char* argv[] ) {
   QGMLCommon::setStyle();
 
 
-  TFile* fileDY  = TFile::Open( "pdfsMixed_dy.root"  );
-  TFile* fileQCD = TFile::Open( "pdfsMixed_qcd.root" );
+  TFile* file  = TFile::Open( "pdfMixed.root"  );
 
   double ptBins[Bins::nPtBins+1];
   Bins::getPtBins(ptBins);
@@ -45,14 +44,14 @@ int main( int argc, char* argv[] ) {
   std::string outdir("pdfPlots");
   system( Form("mkdir -p %s", outdir.c_str()) );
 
-  drawPDFs( outdir, "ptd"  , "p_{T,D}"       , fileDY, fileQCD, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
-  drawPDFs( outdir, "axis2", "-log(#sigma_{2})", fileDY, fileQCD, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
-  drawPDFs( outdir, "mult" , "Multiplicity"  , fileDY, fileQCD, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
+  drawPDFs( outdir, "ptd"  , "p_{T,D}"         , file, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
+  drawPDFs( outdir, "axis2", "-log(#sigma_{2})", file, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
+  drawPDFs( outdir, "mult" , "Multiplicity"    , file, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
 
 }
 
 
-void drawPDFs( const std::string& outdir, const std::string& var, const std::string& axisName, TFile* fileDY, TFile* fileQCD, int nBinsPt, double* ptBins, int nBinsRho, double* rhoBins ) {
+void drawPDFs( const std::string& outdir, const std::string& var, const std::string& axisName, TFile* file, int nBinsPt, double* ptBins, int nBinsRho, double* rhoBins ) {
 
   std::cout << "-> Starting to draw PDFs for " << var << std::endl;
 
@@ -65,20 +64,25 @@ void drawPDFs( const std::string& outdir, const std::string& var, const std::str
       float rhoMin =  rhoBins[i_rho  ];
       float rhoMax =  rhoBins[i_rho+1];
 
-      std::string histoName_pdf  (Form(  "pdf_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
-      std::string histoName_quark(Form("quark_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
-      std::string histoName_gluon(Form("gluon_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
-      std::string histoName_undef(Form("undef_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_dy_pdf  (Form(  "pdf_dy_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_dy_quark(Form("quark_dy_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_dy_gluon(Form("gluon_dy_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_dy_undef(Form("undef_dy_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
 
-      TH1D* h1_pdf_dy    = (TH1D*)fileDY ->Get(histoName_pdf  .c_str());
-      TH1D* h1_quark_dy  = (TH1D*)fileDY ->Get(histoName_quark.c_str());
-      TH1D* h1_gluon_dy  = (TH1D*)fileDY ->Get(histoName_gluon.c_str());
-      TH1D* h1_undef_dy  = (TH1D*)fileDY ->Get(histoName_undef.c_str());
+      TH1D* h1_pdf_dy    = (TH1D*)file->Get(histoName_dy_pdf  .c_str());
+      TH1D* h1_quark_dy  = (TH1D*)file->Get(histoName_dy_quark.c_str());
+      TH1D* h1_gluon_dy  = (TH1D*)file->Get(histoName_dy_gluon.c_str());
+      TH1D* h1_undef_dy  = (TH1D*)file->Get(histoName_dy_undef.c_str());
 
-      TH1D* h1_pdf_qcd   = (TH1D*)fileQCD->Get(histoName_pdf  .c_str());
-      TH1D* h1_quark_qcd = (TH1D*)fileQCD->Get(histoName_quark.c_str());
-      TH1D* h1_gluon_qcd = (TH1D*)fileQCD->Get(histoName_gluon.c_str());
-      TH1D* h1_undef_qcd = (TH1D*)fileQCD->Get(histoName_undef.c_str());
+      std::string histoName_qcd_pdf  (Form(  "pdf_qcd_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_qcd_quark(Form("quark_qcd_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_qcd_gluon(Form("gluon_qcd_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+      std::string histoName_qcd_undef(Form("undef_qcd_%s_pt%d_rho%d"  , var.c_str(), i_pt, i_rho));
+
+      TH1D* h1_pdf_qcd   = (TH1D*)file->Get(histoName_qcd_pdf  .c_str());
+      TH1D* h1_quark_qcd = (TH1D*)file->Get(histoName_qcd_quark.c_str());
+      TH1D* h1_gluon_qcd = (TH1D*)file->Get(histoName_qcd_gluon.c_str());
+      TH1D* h1_undef_qcd = (TH1D*)file->Get(histoName_qcd_undef.c_str());
 
 
       if( h1_pdf_qcd->GetEntries()==0 ) continue;
