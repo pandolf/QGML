@@ -9,7 +9,7 @@
 
 
 
-void createPDFs( TTree* tree, const std::string& name );
+void createPDFs( TFile* file, TTree* tree, const std::string& name );
 
 
 
@@ -34,15 +34,19 @@ int main() {
   std::vector<float> ptBins;
   ptBins.push_back(30.);
 
-  createPDFs( treeDY ,  "dy" );
-  createPDFs( treeQCD, "qcd" );
+  TFile* pdfFile = TFile::Open("pdfMixed.root", "recreate" );
+
+  createPDFs( pdfFile, treeDY ,  "dy" );
+  createPDFs( pdfFile, treeQCD, "qcd" );
+
+  pdfFile->Close();
 
   return 0;
 
 }
 
 
-void createPDFs( TTree* tree, const std::string& name ) {
+void createPDFs( TFile* file, TTree* tree, const std::string& name ) {
 
   std::cout << "-> Creating PDFs for: " << name << std::endl;
 
@@ -65,7 +69,7 @@ void createPDFs( TTree* tree, const std::string& name ) {
   tree->SetBranchAddress( "partonId"  , &partonId   );
 
 
-  TFile* file = TFile::Open(Form("pdfsMixed_%s.root", name.c_str()), "recreate");
+  //TFile* file = TFile::Open(Form("pdfsMixed_%s.root", name.c_str()), "recreate");
   file->cd();
 
   double ptBins[Bins::nPtBins+1];
@@ -98,9 +102,9 @@ void createPDFs( TTree* tree, const std::string& name ) {
 
     for( unsigned i_rho=0; i_rho<Bins::nRhoBins; ++i_rho ) {
 
-      std::string histoName_ptd  (Form("pdf_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_axis2(Form("pdf_axis2_pt%d_rho%d", i_pt, i_rho));
-      std::string histoName_mult (Form("pdf_mult_pt%d_rho%d" , i_pt, i_rho));
+      std::string histoName_ptd  (Form("pdf_%s_ptd_pt%d_rho%d"  , name.c_str(), i_pt, i_rho));
+      std::string histoName_axis2(Form("pdf_%s_axis2_pt%d_rho%d", name.c_str(), i_pt, i_rho));
+      std::string histoName_mult (Form("pdf_%s_mult_pt%d_rho%d" , name.c_str(), i_pt, i_rho));
 
       TH1D* newhist_ptd   = new TH1D( histoName_ptd.c_str()  , "", 100, 0., 1.0001 );
       TH1D* newhist_axis2 = new TH1D( histoName_axis2.c_str(), "", 100, 0., 8.     );
@@ -114,9 +118,9 @@ void createPDFs( TTree* tree, const std::string& name ) {
       pdfs_axis2 .push_back(newhist_axis2);
       pdfs_mult  .push_back(newhist_mult );
 
-      std::string histoName_gluon_ptd  (Form("gluon_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_gluon_axis2(Form("gluon_axis2_pt%d_rho%d", i_pt, i_rho));
-      std::string histoName_gluon_mult (Form("gluon_mult_pt%d_rho%d" , i_pt, i_rho));
+      std::string histoName_gluon_ptd  (Form("gluon_%s_ptd_pt%d_rho%d"  , name.c_str(), i_pt, i_rho));
+      std::string histoName_gluon_axis2(Form("gluon_%s_axis2_pt%d_rho%d", name.c_str(), i_pt, i_rho));
+      std::string histoName_gluon_mult (Form("gluon_%s_mult_pt%d_rho%d" , name.c_str(), i_pt, i_rho));
 
       TH1D* newhist_gluon_ptd   = new TH1D( histoName_gluon_ptd.c_str()  , "", 100, 0., 1.0001 );
       TH1D* newhist_gluon_axis2 = new TH1D( histoName_gluon_axis2.c_str(), "", 100, 0., 8.     );
@@ -130,9 +134,9 @@ void createPDFs( TTree* tree, const std::string& name ) {
       gluon_axis2 .push_back(newhist_gluon_axis2);
       gluon_mult  .push_back(newhist_gluon_mult );
 
-      std::string histoName_quark_ptd  (Form("quark_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_quark_axis2(Form("quark_axis2_pt%d_rho%d", i_pt, i_rho));
-      std::string histoName_quark_mult (Form("quark_mult_pt%d_rho%d" , i_pt, i_rho));
+      std::string histoName_quark_ptd  (Form("quark_%s_ptd_pt%d_rho%d"  , name.c_str(), i_pt, i_rho));
+      std::string histoName_quark_axis2(Form("quark_%s_axis2_pt%d_rho%d", name.c_str(), i_pt, i_rho));
+      std::string histoName_quark_mult (Form("quark_%s_mult_pt%d_rho%d" , name.c_str(), i_pt, i_rho));
 
       TH1D* newhist_quark_ptd   = new TH1D( histoName_quark_ptd.c_str()  , "", 100, 0., 1.0001 );
       TH1D* newhist_quark_axis2 = new TH1D( histoName_quark_axis2.c_str(), "", 100, 0., 8.     );
@@ -146,9 +150,9 @@ void createPDFs( TTree* tree, const std::string& name ) {
       quark_axis2 .push_back(newhist_quark_axis2);
       quark_mult  .push_back(newhist_quark_mult );
 
-      std::string histoName_undef_ptd  (Form("undef_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_undef_axis2(Form("undef_axis2_pt%d_rho%d", i_pt, i_rho));
-      std::string histoName_undef_mult (Form("undef_mult_pt%d_rho%d" , i_pt, i_rho));
+      std::string histoName_undef_ptd  (Form("undef_%s_ptd_pt%d_rho%d"  , name.c_str(), i_pt, i_rho));
+      std::string histoName_undef_axis2(Form("undef_%s_axis2_pt%d_rho%d", name.c_str(), i_pt, i_rho));
+      std::string histoName_undef_mult (Form("undef_%s_mult_pt%d_rho%d" , name.c_str(), i_pt, i_rho));
 
       TH1D* newhist_undef_ptd   = new TH1D( histoName_undef_ptd.c_str()  , "", 100, 0., 1.0001 );
       TH1D* newhist_undef_axis2 = new TH1D( histoName_undef_axis2.c_str(), "", 100, 0., 8.     );
@@ -191,9 +195,9 @@ void createPDFs( TTree* tree, const std::string& name ) {
 
     //if( !(i_pt>=0 && i_pt<=Bins::nPtBins && i_rho>=0 && i_rho<=Bins::nRhoBins ) ) continue;
 
-    std::string histoName_ptd  (Form("pdf_ptd_pt%d_rho%d"  , i_pt, i_rho));
-    std::string histoName_axis2(Form("pdf_axis2_pt%d_rho%d", i_pt, i_rho));
-    std::string histoName_mult (Form("pdf_mult_pt%d_rho%d" , i_pt, i_rho));
+    std::string histoName_ptd  (Form("pdf_%s_ptd_pt%d_rho%d"  , name.c_str(), i_pt, i_rho));
+    std::string histoName_axis2(Form("pdf_%s_axis2_pt%d_rho%d", name.c_str(), i_pt, i_rho));
+    std::string histoName_mult (Form("pdf_%s_mult_pt%d_rho%d" , name.c_str(), i_pt, i_rho));
 
 
     for( unsigned i=0; i<pdfs_ptd.size(); ++i ) {
@@ -221,9 +225,9 @@ void createPDFs( TTree* tree, const std::string& name ) {
 
     if( partonId==21 ) {
 
-      std::string histoName_gluon_ptd  (Form("gluon_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_gluon_axis2(Form("gluon_axis2_pt%d_rho%d", i_pt, i_rho));
-      std::string histoName_gluon_mult (Form("gluon_mult_pt%d_rho%d" , i_pt, i_rho));
+      std::string histoName_gluon_ptd  (Form("gluon_%s_ptd_pt%d_rho%d"  , name.c_str(), i_pt, i_rho));
+      std::string histoName_gluon_axis2(Form("gluon_%s_axis2_pt%d_rho%d", name.c_str(), i_pt, i_rho));
+      std::string histoName_gluon_mult (Form("gluon_%s_mult_pt%d_rho%d" , name.c_str(), i_pt, i_rho));
 
 
       for( unsigned i=0; i<gluon_ptd.size(); ++i ) {
@@ -250,9 +254,9 @@ void createPDFs( TTree* tree, const std::string& name ) {
 
     } else if( abs(partonId)>0 && abs(partonId)<6  ) {
 
-      std::string histoName_quark_ptd  (Form("quark_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_quark_axis2(Form("quark_axis2_pt%d_rho%d", i_pt, i_rho));
-      std::string histoName_quark_mult (Form("quark_mult_pt%d_rho%d" , i_pt, i_rho));
+      std::string histoName_quark_ptd  (Form("quark_%s_ptd_pt%d_rho%d"  , name.c_str(), i_pt, i_rho));
+      std::string histoName_quark_axis2(Form("quark_%s_axis2_pt%d_rho%d", name.c_str(), i_pt, i_rho));
+      std::string histoName_quark_mult (Form("quark_%s_mult_pt%d_rho%d" , name.c_str(), i_pt, i_rho));
 
 
       for( unsigned i=0; i<quark_ptd.size(); ++i ) {
@@ -281,9 +285,9 @@ void createPDFs( TTree* tree, const std::string& name ) {
 
       //fillHisto( undef_ptd, "ptd", i_pt, i_rho );
 
-      std::string histoName_undef_ptd  (Form("undef_ptd_pt%d_rho%d"  , i_pt, i_rho));
-      std::string histoName_undef_axis2(Form("undef_axis2_pt%d_rho%d", i_pt, i_rho));
-      std::string histoName_undef_mult (Form("undef_mult_pt%d_rho%d" , i_pt, i_rho));
+      std::string histoName_undef_ptd  (Form("undef_%s_ptd_pt%d_rho%d"  , name.c_str(), i_pt, i_rho));
+      std::string histoName_undef_axis2(Form("undef_%s_axis2_pt%d_rho%d", name.c_str(), i_pt, i_rho));
+      std::string histoName_undef_mult (Form("undef_%s_mult_pt%d_rho%d" , name.c_str(), i_pt, i_rho));
 
 
       for( unsigned i=0; i<undef_ptd.size(); ++i ) {
@@ -331,17 +335,5 @@ void createPDFs( TTree* tree, const std::string& name ) {
   for( unsigned i=0; i<undef_mult .size(); ++i ) undef_mult [i]->Write();
     
 
-  file->Close();
-
 }
 
-
-
-//void fillHisto( std::vector<TH1D*> pdfs, const std::string& var, int i_pt, int i_rho ) {
-//
-//  if( i_pt <0 ) return;
-//  if( i_rho<0 ) return;
-//  if( i_pt >=pdfs.size() ) i_pt  = pdfs.size()-1;
-//  if( i_rho>=pdfs.size() ) i_rho = pdfs.size()-1;
-
-  
