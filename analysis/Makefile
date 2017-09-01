@@ -15,11 +15,11 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/
 
 
 
-createTreeLiteDY: createTreeLiteDY.cpp 
-	$(CC) -Wall $(INCLUDES) -o createTreeLiteDY createTreeLiteDY.cpp $(ROOTFLAG) $(EXTRALIBS)
+createTreeLiteDY: createTreeLiteDY.cpp QGLikelihoodCalculatorMixedPDFs.o Bins.o 
+	$(CC) -Wall $(INCLUDES) -o createTreeLiteDY createTreeLiteDY.cpp QGLikelihoodCalculatorMixedPDFs.o Bins.o $(ROOTFLAG) $(EXTRALIBS)
 
-createTreeLiteQCD: createTreeLiteQCD.cpp 
-	$(CC) -Wall $(INCLUDES) -o createTreeLiteQCD createTreeLiteQCD.cpp $(ROOTFLAG) $(EXTRALIBS)
+createTreeLiteQCD: createTreeLiteQCD.cpp QGLikelihoodCalculatorMixedPDFs.o Bins.o
+	$(CC) -Wall $(INCLUDES) -o createTreeLiteQCD createTreeLiteQCD.cpp QGLikelihoodCalculatorMixedPDFs.o Bins.o $(ROOTFLAG) $(EXTRALIBS)
 
 createPDFs_mixed: createPDFs_mixed.cpp Bins.o
 	$(CC) -Wall $(INCLUDES) -o createPDFs_mixed createPDFs_mixed.cpp Bins.o $(ROOTFLAG) $(EXTRALIBS)
@@ -30,8 +30,8 @@ drawPDFmixed: drawPDFmixed.cpp QGMLCommon.o Bins.o
 drawTreeLite: drawTreeLite.cpp QGMLCommon.o
 	$(CC) -Wall $(INCLUDES) -o drawTreeLite drawTreeLite.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
 
-createTreeLite: createTreeLite.cpp QGMLCommon.o
-	$(CC) -Wall $(INCLUDES) -o createTreeLite createTreeLite.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
+createTreeLite: createTreeLite.cpp QGMLCommon.o QGLikelihoodCalculatorMixedPDFs.o 
+	$(CC) -Wall $(INCLUDES) -o createTreeLite createTreeLite.cpp QGMLCommon.o QGLikelihoodCalculatorMixedPDFs.o $(ROOTFLAG) $(EXTRALIBS)
 
 drawQGML: drawQGML.cpp QGMLCommon.o
 	$(CC) -Wall $(INCLUDES) -o drawQGML drawQGML.cpp QGMLCommon.o $(ROOTFLAG) $(EXTRALIBS)
@@ -41,8 +41,12 @@ drawRNNTrainTest: drawRNNTrainTest.cpp QGMLCommon.o
 
 
 
+
 QGMLCommon.o: ../src/QGMLCommon.cc
 	$(CC) -Wall $(INCLUDES) -c ../src/QGMLCommon.cc $(ROOTFLAG) $(EXTRALIBS)
 
 Bins.o: ../../QGLikelihood/src/Bins.cc
 	$(CC) -Wall $(INCLUDES) -c ../../QGLikelihood/src/Bins.cc $(ROOTFLAG) $(EXTRALIBS)
+
+QGLikelihoodCalculatorMixedPDFs.o: ../../QGLikelihood/src/QGLikelihoodCalculatorMixedPDFs.cc
+	$(CC) -Wall $(INCLUDES) -c ../../QGLikelihood/src/QGLikelihoodCalculatorMixedPDFs.cc $(ROOTFLAG) $(EXTRALIBS)
