@@ -45,7 +45,7 @@ int main( int argc, char* argv[] ) {
   std::string outdir("pdfPlots");
   system( Form("mkdir -p %s", outdir.c_str()) );
 
-  drawPDFs( outdir, "ptd", "p_{T,D}", fileDY, fileQCD, Bins::nPtBins+1, ptBins, Bins::nRhoBins+1, rhoBins );
+  drawPDFs( outdir, "ptd", "p_{T,D}", fileDY, fileQCD, Bins::nPtBins, ptBins, Bins::nRhoBins, rhoBins );
 
 
 
@@ -55,6 +55,8 @@ int main( int argc, char* argv[] ) {
 
 
 void drawPDFs( const std::string& outdir, const std::string& var, const std::string& axisName, TFile* fileDY, TFile* fileQCD, int nBinsPt, double* ptBins, int nBinsRho, double* rhoBins ) {
+
+  std::cout << "-> Starting to draw PDFs for " << var << std::endl;
 
   for( unsigned i_pt=0; i_pt<nBinsPt; ++i_pt ) {
 
@@ -79,6 +81,7 @@ void drawPDFs( const std::string& outdir, const std::string& var, const std::str
       TH1D* h1_quark_qcd = (TH1D*)fileQCD->Get(histoName_quark.c_str());
       TH1D* h1_gluon_qcd = (TH1D*)fileQCD->Get(histoName_gluon.c_str());
       TH1D* h1_undef_qcd = (TH1D*)fileQCD->Get(histoName_undef.c_str());
+
 
       if( h1_pdf_qcd->GetEntries()==0 ) continue;
       if( h1_pdf_dy ->GetEntries()==0 ) continue;
@@ -127,12 +130,12 @@ void drawPDFs( const std::string& outdir, const std::string& var, const std::str
       h2_axes->SetYTitle( "Normalized to Unity" );
       h2_axes->Draw();
 
-      TLegend* legend = new TLegend( 0.25, 0.7, 0.6, 0.9 );
+      TLegend* legend = new TLegend( 0.25, 0.74, 0.6, 0.94 );
       legend->SetFillColor(0);
       legend->SetTextSize(0.035);
       legend->SetHeader(Form("%.0f < p_{T} < %.0f GeV, |#eta|<1.3, %.0f < #rho < %.0f GeV", ptMin, ptMax, rhoMin, rhoMax));
-      legend->AddEntry( h1_pdf_dy , Form("DY (%.1fq/%.1fg/%.1fu)" , 100.*qfrac_dy, 100.*gfrac_dy, 100.*ufrac_dy), "F" );
-      legend->AddEntry( h1_pdf_qcd, Form("QCD (%.1fq/%.1fg/%.1fu)" , 100.*qfrac_qcd, 100.*gfrac_qcd, 100.*ufrac_qcd), "F" );
+      legend->AddEntry( h1_pdf_dy , Form( "DY (%.1f%% q / %.1f%% g / %.1f%% u)" , 100.*qfrac_dy , 100.*gfrac_dy , 100.*ufrac_dy ), "L" );
+      legend->AddEntry( h1_pdf_qcd, Form("QCD (%.1f%% q / %.1f%% g / %.1f%% u)" , 100.*qfrac_qcd, 100.*gfrac_qcd, 100.*ufrac_qcd), "L" );
       legend->Draw("same");
 
       h1_pdf_dy ->DrawNormalized("same"); 
