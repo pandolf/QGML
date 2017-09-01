@@ -4,6 +4,8 @@
 #include "TTree.h"
 #include "TLorentzVector.h"
 
+#include "../../QGLikelihood/interface/QGLikelihoodCalculatorMixedPDFs.h"
+
 #define mt2_cxx
 #include "interface/mt2.h"
 
@@ -53,6 +55,7 @@ void createTreeLiteDY( const std::string& path, const std::string& name ) {
   float axis2;
   int   mult;
   float qgl;
+  float qglM;
   int   partonId;
 
   tree_lite->Branch("weight"  , &w        , "w/F"        );
@@ -63,18 +66,21 @@ void createTreeLiteDY( const std::string& path, const std::string& name ) {
   tree_lite->Branch("axis2"   , &axis2    , "axis2/F"    );
   tree_lite->Branch("mult"    , &mult     , "mult/I"     );
   tree_lite->Branch("qgl"     , &qgl      , "qgl/F"      );
+  tree_lite->Branch("qglM"    , &qglM     , "qglM/F"     );
   tree_lite->Branch("partonId", &partonId , "partonId/I" );
 
 
+  QGLikelihoodCalculatorMixedPDFs qglmc("pdfMixed.root");
 
   int nentries = tree->GetEntries();
-
 
   for( unsigned iEntry=0; iEntry<nentries; iEntry++ ) {
 
     tree->GetEntry(iEntry);
 
     if( iEntry%50000 == 0 ) std::cout << "  Entry: " << iEntry << " / " << nentries << std::endl;
+
+    if( myTree.jet_pt[0]>2000. ) continue;
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
@@ -133,6 +139,7 @@ void createTreeLiteDY( const std::string& path, const std::string& name ) {
     mult = myTree.jet_mult[0];
     qgl = myTree.jet_qgl[0];
     partonId = myTree.jet_partonId[0];
+    qglM = qglmc.computeQGLikelihood( pt, rho, mult, ptd, axis2 );
 
     tree_lite->Fill();
       
