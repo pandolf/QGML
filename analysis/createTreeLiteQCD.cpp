@@ -11,7 +11,7 @@
 
 
 
-std::string type="qcdpt";
+std::string type="qcdht";
 
 void createTreeLiteQCD( const std::string& path, const std::string& name );
 
@@ -26,7 +26,7 @@ int main( int argc, char* argv[] ) {
 
   std::string path = "root://t3dcachedb.psi.ch//pnfs/psi.ch/cms/trivcat/store/user/pandolf/MT2production/80X/PostProcessed/prodAug16_DYandQCD_T2_postProc_Aug21/";
 
-  if( type=="qcdpt" ) {
+  if( type=="qcdpt" || type=="pt") {
     createTreeLiteQCD( path, "QCD_Pt15to30" );
     createTreeLiteQCD( path, "QCD_Pt30to50" );
     createTreeLiteQCD( path, "QCD_Pt50to80" );
@@ -42,7 +42,7 @@ int main( int argc, char* argv[] ) {
     createTreeLiteQCD( path, "QCD_Pt1800to2400" );
     createTreeLiteQCD( path, "QCD_Pt2400to3200" );
     createTreeLiteQCD( path, "QCD_Pt3200" );
-  } else if( type=="qcdht" ) {
+  } else if( type=="qcdht" || type=="ht" ) {
     createTreeLiteQCD( path, "QCD_HT100to200" );
     createTreeLiteQCD( path, "QCD_HT200to300" );
     createTreeLiteQCD( path, "QCD_HT300to500" );
@@ -129,7 +129,7 @@ void createTreeLiteQCD( const std::string& path, const std::string& name ) {
     w = weight;
     rho = myTree.rho;
 
-    if( fabs(myTree.jet_eta[0])<1.3 && myTree.jet_pt[0]>30. ) { // use pt of other
+    if( fabs(myTree.jet_eta[0])<1.3 && myTree.jet_pt[0]>30. && myTree.jet_pt[0]<2000. ) {
 
       pt  = myTree.jet_pt[0];
       eta = myTree.jet_eta[0];
@@ -144,7 +144,7 @@ void createTreeLiteQCD( const std::string& path, const std::string& name ) {
 
     }
 
-    if( fabs(myTree.jet_eta[1])<1.3 && myTree.jet_pt[1]>30. ) { // use pt of other
+    if( fabs(myTree.jet_eta[1])<1.3 && myTree.jet_pt[1]>30. && myTree.jet_pt[1]<2000. ) { 
 
       pt  = myTree.jet_pt[1];
       eta = myTree.jet_eta[1];
