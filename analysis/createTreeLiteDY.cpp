@@ -20,7 +20,7 @@ int main() {
   createTreeLiteDY( path, "DYJetsToLL_M50_HT100to200" );
   createTreeLiteDY( path, "DYJetsToLL_M50_HT1200to2500" );
   createTreeLiteDY( path, "DYJetsToLL_M50_HT200to400" );
-  createTreeLiteDY( path, "DYJetsToLL_M50_HT2500toInf" );
+  //createTreeLiteDY( path, "DYJetsToLL_M50_HT2500toInf" );
   createTreeLiteDY( path, "DYJetsToLL_M50_HT400to600" );
   createTreeLiteDY( path, "DYJetsToLL_M50_HT600to800" );
   createTreeLiteDY( path, "DYJetsToLL_M50_HT800to1200" );
@@ -80,7 +80,7 @@ void createTreeLiteDY( const std::string& path, const std::string& name ) {
 
     if( iEntry%50000 == 0 ) std::cout << "  Entry: " << iEntry << " / " << nentries << std::endl;
 
-    if( myTree.jet_pt[0]>2000. ) continue;
+    if( myTree.jet_pt[0]>=2000. ) continue;
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
